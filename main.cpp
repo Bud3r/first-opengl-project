@@ -12,6 +12,7 @@
 constexpr int InitWidth = 800;
 constexpr int InitHeight = 600;
 constexpr int ErrLogSize = 512;
+float moveDir = 0.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -21,6 +22,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+       
+    moveDir = (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ? -1.0f : 0.0f) + (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ? 1.0f : 0.0f);
 }
 
 int main()
@@ -73,6 +76,8 @@ int main()
     ShaderProgram program(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
     Texture texture(FILE_PATH(image.png));
 
+    float offset = 0.0f;
+
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
@@ -80,7 +85,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         
         program.use();
-        float offset = static_cast<float>(clock()) / static_cast<float>(CLOCKS_PER_SEC) * 0.1f;
+        offset += moveDir * 0.01f;
+        std::cout << moveDir << std::endl;
         program.setFloat("offset", offset);
         //program.setInt("outTexture", 0);
         glBindVertexArray(VAO);
