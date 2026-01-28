@@ -8,11 +8,13 @@ out vec2 UV;
 
 uniform float offset;
 uniform mat4 transform;
+uniform mat4 cameraTransform;
+uniform mat4 perspective;
 
 
 void main() 
 {
-	gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	gl_Position = perspective * cameraTransform * transform * vec4(aPos, 1.0);
 	verPos = gl_Position;
 	UV = aUv;
 }
