@@ -16,6 +16,7 @@ public:
 	ShaderProgram(const char* vertexPath, const char* fragmentPath);
 	~ShaderProgram();
 	void use();
+	int getId();
 	void setBool(const std::string &name, bool value) const;
 	void setInt(const std::string &name, int value) const;
 	void setFloat(const std::string &name, float value) const;
@@ -86,6 +87,10 @@ ShaderProgram::~ShaderProgram() {
 
 void ShaderProgram::use() {
 	glUseProgram(ID);
+}
+
+int ShaderProgram::getId() {
+	return ID;
 }
 
 void ShaderProgram::setBool(const std::string& name, bool value) const {

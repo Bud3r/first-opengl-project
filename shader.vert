@@ -7,10 +7,12 @@ out vec4 verPos;
 out vec2 UV;
 
 uniform float offset;
+uniform mat4 transform;
+
 
 void main() 
 {
-	gl_Position = vec4((aPos.x + offset) * -1f , aPos.y * -1f, aPos.z * -1f, 1.0);
+	gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.0);
 	verPos = gl_Position;
 	UV = aUv;
 }

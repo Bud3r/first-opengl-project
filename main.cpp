@@ -2,12 +2,15 @@
 #include <fmt/core.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm\glm.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtc\type_ptr.hpp>
 #include "shader_program.h"
 #include "texture.h"
 
 #define FILE_PATH(file) "F:\\Misc\\cmake-test-project\\" #file
 
-// Book: Page 63 - 7.7
+// Book: Page 67 - 8.1
 
 constexpr int InitWidth = 800;
 constexpr int InitHeight = 600;
@@ -87,6 +90,12 @@ int main()
         program.use();
         offset += moveDir * 0.01f;
         std::cout << moveDir << std::endl;
+
+        glm::mat4 trans = glm::identity<glm::mat4>();
+        trans = glm::rotate(trans, 1.0f, glm::vec3(1.0f, 0.2f, 0.0f));
+
+        glUniformMatrix4fv(glGetUniformLocation(program.getId(), "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+
         program.setFloat("offset", offset);
         //program.setInt("outTexture", 0);
         glBindVertexArray(VAO);

@@ -17,6 +17,7 @@ private:
 
 Texture::Texture(const char* filePath)
 {
+	stbi_set_flip_vertically_on_load(true);
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 
