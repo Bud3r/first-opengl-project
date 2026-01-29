@@ -1,6 +1,5 @@
 #include <iostream>
-#include <cstdarg>
-#include <thread>
+
 #include <fmt/core.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -9,20 +8,7 @@
 #include <glm\gtc\type_ptr.hpp>
 #include "shader_program.h"
 #include "texture.h"
-
-#include <Jolt/Jolt.h>
-
-// Jolt includes
-#include <Jolt/RegisterTypes.h>
-#include <Jolt/Core/Factory.h>
-#include <Jolt/Core/TempAllocator.h>
-#include <Jolt/Core/JobSystemThreadPool.h>
-#include <Jolt/Physics/PhysicsSettings.h>
-#include <Jolt/Physics/PhysicsSystem.h>
-#include <Jolt/Physics/Collision/Shape/BoxShape.h>
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
-#include <Jolt/Physics/Body/BodyCreationSettings.h>
-#include <Jolt/Physics/Body/BodyActivationListener.h>
+#include "physics_server.h"
 
 #define FILE_PATH(file) "F:\\Misc\\cmake-test-project\\" #file
 
@@ -48,6 +34,7 @@ void processInput(GLFWwindow* window) {
 
 int main()
 {
+    physics_main();
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -137,42 +124,5 @@ int main()
     return 0;
 }
 
-/*s Test : JPH::BroadPhaseLayerInterface
-{
-public:
-    Test : JPH::BroadPhaseLayerInterface();
-    ~Test : JPH::BroadPhaseLayerInterface();
-
-private:
-
-};
-
-Test : JPH::BroadPhaseLayerInterface::Test : JPH::BroadPhaseLayerInterface()
-{
-}
-
-Test : JPH::BroadPhaseLayerInterface::~Test : JPH::BroadPhaseLayerInterface()
-{
-}*/
 
 
-void physics_main() {
-    JPH::RegisterDefaultAllocator();
-    JPH::Factory::sInstance = new JPH::Factory();
-
-    JPH::RegisterTypes();
-
-    JPH::TempAllocatorImpl temp_allocator(10 * 1024 * 1024);
-    JPH::JobSystemThreadPool job_system(4, 0, std::thread::hardware_concurrency() - 1);
-
-    const uint32_t cMaxBodies = 1024;
-    const uint32_t cNumBodyMutexes = 0;
-    const uint32_t cMaxBodyPairs = 1024;
-    const uint32_t cMaxContactConstraints = 1024;
-
-    JPH::BroadPhaseLayer bpli;
-
-
-    JPH::PhysicsSystem physics_system;
-
-}
