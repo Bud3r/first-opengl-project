@@ -53,23 +53,46 @@ private:
     BroadPhaseLayer	mObjectToBroadPhase[BroadPhaseLayers::COUNT];
 };
 
-void physics_main() {
+class PhysicsServer
+{
+public:
+    PhysicsServer();
+    ~PhysicsServer();
+
+private:
+    //std::vector<uint> bodyIds;
+};
+
+
+void SetupJolt() {
     RegisterDefaultAllocator();
     Factory::sInstance = new Factory();
 
     RegisterTypes();
+}
+
+void EndJolt() {
+    UnregisterTypes();
+
+    delete Factory::sInstance;
+    Factory::sInstance = nullptr;
+}
+
+
+PhysicsServer::PhysicsServer()
+{
     TempAllocatorImpl temp_allocator(10 * 1024 * 1024);
     JobSystemThreadPool job_system(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
-    
-    const uint32_t cMaxBodies = 1024;
-    const uint32_t cNumBodyMutexes = 0;
-    const uint32_t cMaxBodyPairs = 1024;
-    const uint32_t cMaxContactConstraints = 1024;
+
+    const uint cMaxBodies = 1024;
+    const uint cNumBodyMutexes = 0;
+    const uint cMaxBodyPairs = 1024;
+    const uint cMaxContactConstraints = 1024;
 
     MyBroadPhaseLayerInterface broad_phase_layer_interface;
     ObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter;
     ObjectLayerPairFilter object_layer_pair_filter;
-    
+
     PhysicsSystem physics_system;
 
     physics_system.Init(
@@ -81,7 +104,7 @@ void physics_main() {
         object_vs_broad_phase_layer_filter,
         object_layer_pair_filter
     );
-    
+
     BodyInterface& body_interface = physics_system.GetBodyInterface();
     BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
     ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
@@ -114,10 +137,15 @@ void physics_main() {
     body_interface.RemoveBody(floor->GetID());
     body_interface.DestroyBody(floor->GetID());
 
-    UnregisterTypes();
-
-    delete Factory::sInstance;
-    Factory::sInstance = nullptr;
-
     std::printf("Body not active anymore");
+}
+
+PhysicsServer::~PhysicsServer()
+{
+
+}
+
+
+void add_body() {
+
 }

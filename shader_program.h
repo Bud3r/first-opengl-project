@@ -17,6 +17,7 @@ public:
 	~ShaderProgram();
 	void use();
 	int getId();
+	GLint getLocation(const char* uniform);
 	void setBool(const std::string &name, bool value) const;
 	void setInt(const std::string &name, int value) const;
 	void setFloat(const std::string &name, float value) const;
@@ -83,6 +84,10 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 
 ShaderProgram::~ShaderProgram() {
 	glDeleteProgram(ID);
+}
+
+GLint ShaderProgram::getLocation(const char* uniform) {
+	return glGetUniformLocation(ID, uniform);
 }
 
 void ShaderProgram::use() {
