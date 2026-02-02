@@ -10,7 +10,8 @@ find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Jolt CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 
-add_executable(HelloWorld "main.cpp" "shader_program.h" "texture.h" "physics_server.h" "cube.h")
+add_executable(HelloWorld "main.cpp" "shader_program.h" "texture.h" "physics_server.h" "cube.h" "camera.h" "model.h" "mesh.h")
 
-target_link_libraries(HelloWorld PRIVATE fmt::fmt PRIVATE glad::glad PRIVATE glfw PRIVATE glm::glm PRIVATE Jolt::Jolt)
+target_link_libraries(HelloWorld PRIVATE fmt::fmt PRIVATE glad::glad PRIVATE glfw PRIVATE glm::glm PRIVATE Jolt::Jolt PRIVATE assimp::assimp)

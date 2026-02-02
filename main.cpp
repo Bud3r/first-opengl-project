@@ -10,18 +10,19 @@
 #include "texture.h"
 #include "physics_server.h"
 #include "cube.h"
+#include "camera.h"
+#include "time.h"
 
 #define FILE_PATH(file) "F:\\Misc\\cmake-test-project\\" #file
 
 
 // Book: Page 82 - 9.
 
+vec2 movementInput = vec2(0.0f);
+
 constexpr int InitWidth = 800;
 constexpr int InitHeight = 600;
 constexpr int ErrLogSize = 512;
-float moveDir = 0.0f;
-
-void setup_uniform_buffer();
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -30,8 +31,19 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void processInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    movementInput = vec2(
+        (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? -1.0f : 0.0f) + (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? 1.0f : 0.0f),
+        (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ? -1.0f : 0.0f) + (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ? 1.0f : 0.0f)
+    );
+
+    if (movementInput.x != 0.0f || movementInput.y != 0.0f) {
+        movementInput = normalize(movementInput);
+    }
     
-    moveDir = (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ? -1.0f : 0.0f) + (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ? 1.0f : 0.0f);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (glfwRawMouseMotionSupported())
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 }
 
 GLFWwindow* setupWindow() {
@@ -62,17 +74,6 @@ GLFWwindow* setupWindow() {
 
 int main()
 {
-    /*{
-        SetupJolt();
-        PhysicsServer physics_server;
-        EndJolt();
-    }*/
-
-    /*GLFWwindow* window = setupWindow();
-
-    if (!window)
-        return -1;*/
-
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -100,8 +101,9 @@ int main()
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LESS);*/
 
+    Camera camera;
     ShaderProgram program(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
-    Texture texture(FILE_PATH(image.png));
+    Texture* texture = Texture::Load(FILE_PATH(image.png));
     std::vector<Cube*> cubes;
     
     cubes.push_back(new Cube(&program));
@@ -123,36 +125,60 @@ int main()
     glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO, 0, 2 * sizeof(glm::mat4));
+    camera.Position = vec3(0.0f, 0.0f, -1.0f);
     
-    glm::mat4 perspective = glm::perspective(
-        glm::radians(45.0f),
-        static_cast<float>(InitWidth) / static_cast<float>(InitHeight),
-        0.1f,
-        100.0f
-    );
 
-    mat4 view = glm::identity<mat4>();
-    view = translate(view, vec3(0.0f, 0.0f, -1.0f));
-
-    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), glm::value_ptr(view));
-    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), glm::value_ptr(perspective));
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    dvec2 oldMousePos(0.0f);
+    double oldTime = glfwGetTime();
+    glfwGetCursorPos(window, &oldMousePos.x, &oldMousePos.y);
 
 
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
+        double time = glfwGetTime();
+        double delta = time - oldTime;
+        oldTime = time;
+        dvec2 mousePos;
+        glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
         
+        double sensitivity = 2.0;
+        dvec2 mouseMovement = (mousePos - oldMousePos) * sensitivity * delta;
+        oldMousePos = mousePos;
+        camera.Rotation.y += static_cast<float>(mouseMovement.x);
+        camera.Rotation.x = std::clamp(camera.Rotation.x + static_cast<float>(mouseMovement.y), glm::radians(-89.0f), glm::radians(89.0f));
 
-        
-        //glUniformMatrix4fv(program.getLocation("view2"), 1, GL_FALSE, glm::value_ptr(view));
-        
+        vec3 cameraFront = glm::normalize(vec3(
+            cos(camera.Rotation.y) * cos(camera.Rotation.x),
+            sin(camera.Rotation.x), 
+            sin(camera.Rotation.y) * cos(camera.Rotation.x)
+        ));
 
-        for (auto &cube : cubes)
+
+        vec3 movement(
+            movementInput.x * static_cast<float>(delta), 
+            0.0f, 
+            movementInput.y * static_cast<float>(delta)
+            );
+
+        movement = glm::cross(cameraFront, movement);
+
+        camera.Position += movement;
+
+        if (delta > 0.0) {
+            glfwSetWindowTitle(window, std::to_string(static_cast<int>(1.0 / delta)).c_str());
+        }
+        mat4 projection = camera.GetProjectionMatrix(static_cast<float>(InitWidth) / static_cast<float>(InitHeight));
+        mat4 view = camera.GetViewMatrix();
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), glm::value_ptr(view));
+        glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), glm::value_ptr(projection));
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        for (auto cube : cubes)
         {
             cube->Draw();
         }
