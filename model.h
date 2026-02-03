@@ -11,12 +11,11 @@ class Model
 public:
 	Model(const char* filePath);
 	~Model();
-	void parseNode(aiNode* node, const aiScene* scene);
-	void parseMesh(aiMesh* mesh, const aiScene* scene);
+	void Draw(const ShaderProgram& program);
 	std::vector<Mesh> meshes;
-
 private:
-
+	void parseNode(aiNode* node, const aiScene* scene);
+	Mesh parseMesh(aiMesh* mesh, const aiScene* scene);
 };
 
 Model::Model(const char* filePath)
@@ -36,12 +35,23 @@ Model::~Model()
 {
 }
 
+void Model::Draw(const ShaderProgram &program) {
+	mat4 model = mat4(1.0f);
+	program.use();
+	glUniform4f(program.getLocation("modulate"), 1.0f, 1.0f, 1.0f, 1.0f);
+	glUniformMatrix4fv(program.getLocation("model"), 1, GL_FALSE, value_ptr(model));
+
+	for (auto mesh : meshes) {
+		mesh.Draw();
+	}
+}
+
 void Model::parseNode(aiNode* node, const aiScene* scene) {
 	for (int i = 0; i < node->mNumMeshes; i++)
 	{
 		int meshIndex = node->mMeshes[i];
 		aiMesh* mesh = scene->mMeshes[meshIndex];
-		parseMesh(mesh, scene);
+		meshes.push_back(parseMesh(mesh, scene));
 	}
 
 	for (int i = 0; i < node->mNumChildren; i++) {
@@ -49,10 +59,10 @@ void Model::parseNode(aiNode* node, const aiScene* scene) {
 	}
 }
 
-void Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
+Mesh Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
-	//std::vector<Texture> textures;
+	std::vector<Texture*> textures;
 
 	for (int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -76,12 +86,6 @@ void Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 			indices.push_back(face.mIndices[j]);
 		}
 	}
-	
-	if (mesh->mMaterialIndex < scene->mNumMaterials) {
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		aiString str;
-		material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-		Texture texture;
-		//texture.id =
-	}
+
+	return Mesh(vertices, indices, textures);
 }

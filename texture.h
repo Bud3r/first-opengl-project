@@ -11,6 +11,7 @@ class Texture
 public:
 	static Texture* Load(const char* filePath);
 	unsigned int GetId();
+	std::string type;
 private:
 	Texture(const char* filePath);
 	~Texture();
@@ -19,6 +20,7 @@ private:
 	static std::vector<Texture*> loadedTextures;
 };
 
+std::vector<Texture*> Texture::loadedTextures;
 
 Texture* Texture::Load(const char* filePath) {
 	for (Texture* texture : loadedTextures) {
@@ -26,7 +28,7 @@ Texture* Texture::Load(const char* filePath) {
 			return texture;
 		}
 	}
-
+	
 	Texture* texture = new Texture(filePath);
 	loadedTextures.push_back(texture);
 	

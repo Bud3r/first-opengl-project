@@ -19,6 +19,23 @@ public:
 	float FarClip = 100.0f;
 	vec3 Position = vec3(0.0f);
 	vec3 Rotation = vec3(0.0f);
+	static constexpr vec3 Up = vec3(0.0f, 1.0f, 0.0f);
+	vec3 Target = vec3(0.0f, 0.0f, 0.0f);
+
+	void Move(vec3 movement) {
+		//glm::vec3 camera_direction = glm::normalize(Position - Target);
+		
+		vec3 camera_front = glm::normalize(vec3(
+			cos(Rotation.y) * cos(Rotation.x),
+			-sin(Rotation.x),
+			sin(Rotation.y) * cos(Rotation.x)
+		));
+		std::printf("(%f, %f, %f,)\n", camera_front.x, camera_front.y, camera_front.z);
+		glm::vec3 camera_right = glm::normalize(glm::cross(Up, camera_front));
+		
+		Position -= camera_front * movement.z;
+		Position -= camera_right * movement.x;
+	}
 
 	mat4 GetViewMatrix();
 	mat4 GetProjectionMatrix(float ratio);
@@ -26,10 +43,10 @@ public:
 
 
 mat4 Camera::GetViewMatrix() {
-	mat4 view = identity<mat4>();
+	glm::mat4 view = glm::identity<mat4>();
 	view = rotate(view, Rotation.x, vec3(1.0f, 0.0f, 0.0f));
-	view = rotate(view, Rotation.y, vec3(0.0f, 1.0f, 0.0f));
-	view = rotate(view, Rotation.z, vec3(0.0f, 0.0f, 1.0f));
+	view = rotate(view, Rotation.y + glm::radians(90.0f), vec3(0.0f, 1.0f, 0.0f));
+	view = rotate(view, Rotation.z, vec3(0.0f, 0.0f, -1.0f));
 	view = translate(view, Position);
 	return view;
 }

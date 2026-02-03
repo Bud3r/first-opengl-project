@@ -15,9 +15,9 @@ class ShaderProgram
 public:
 	ShaderProgram(const char* vertexPath, const char* fragmentPath);
 	~ShaderProgram();
-	void use();
-	int getId();
-	GLint getLocation(const char* uniform);
+	void use() const;
+	int getId() const;
+	GLint getLocation(const char* uniform) const;
 	void setBool(const std::string &name, bool value) const;
 	void setInt(const std::string &name, int value) const;
 	void setFloat(const std::string &name, float value) const;
@@ -86,15 +86,15 @@ ShaderProgram::~ShaderProgram() {
 	glDeleteProgram(ID);
 }
 
-GLint ShaderProgram::getLocation(const char* uniform) {
+GLint ShaderProgram::getLocation(const char* uniform) const {
 	return glGetUniformLocation(ID, uniform);
 }
 
-void ShaderProgram::use() {
+void ShaderProgram::use() const {
 	glUseProgram(ID);
 }
 
-int ShaderProgram::getId() {
+int ShaderProgram::getId() const {
 	return ID;
 }
 

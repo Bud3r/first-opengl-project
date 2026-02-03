@@ -12,6 +12,7 @@
 #include "cube.h"
 #include "camera.h"
 #include "time.h"
+#include "model.h"
 
 #define FILE_PATH(file) "F:\\Misc\\cmake-test-project\\" #file
 
@@ -23,6 +24,7 @@ vec2 movementInput = vec2(0.0f);
 constexpr int InitWidth = 800;
 constexpr int InitHeight = 600;
 constexpr int ErrLogSize = 512;
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -115,6 +117,7 @@ int main()
     cubes[1]->mPosition = vec3(0.5f, 0.0f, 0.0f);
     cubes[1]->mModulate = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
+    Model model = Model(FILE_PATH(ak47.glb));
 
     unsigned int matrices_index = glGetUniformBlockIndex(program.getId(), "Matrices");
     glUniformBlockBinding(program.getId(), matrices_index, 0);
@@ -149,26 +152,18 @@ int main()
         oldMousePos = mousePos;
         camera.Rotation.y += static_cast<float>(mouseMovement.x);
         camera.Rotation.x = std::clamp(camera.Rotation.x + static_cast<float>(mouseMovement.y), glm::radians(-89.0f), glm::radians(89.0f));
-
-        vec3 cameraFront = glm::normalize(vec3(
-            cos(camera.Rotation.y) * cos(camera.Rotation.x),
-            sin(camera.Rotation.x), 
-            sin(camera.Rotation.y) * cos(camera.Rotation.x)
-        ));
-
-
-        vec3 movement(
+        
+        vec4 movement(
             movementInput.x * static_cast<float>(delta), 
             0.0f, 
-            movementInput.y * static_cast<float>(delta)
+            movementInput.y * static_cast<float>(delta),
+            1.0f
             );
 
-        movement = glm::cross(cameraFront, movement);
-
-        camera.Position += movement;
+        camera.Move(movement);
 
         if (delta > 0.0) {
-            glfwSetWindowTitle(window, std::to_string(static_cast<int>(1.0 / delta)).c_str());
+            glfwSetWindowTitle(window, (std::string("FPS: ") + std::to_string(static_cast<int>(1.0 / delta))).c_str());
         }
         mat4 projection = camera.GetProjectionMatrix(static_cast<float>(InitWidth) / static_cast<float>(InitHeight));
         mat4 view = camera.GetViewMatrix();
@@ -178,10 +173,8 @@ int main()
         glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), glm::value_ptr(projection));
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        for (auto cube : cubes)
-        {
-            cube->Draw();
-        }
+        
+        model.Draw(program);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
