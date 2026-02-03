@@ -2,6 +2,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <iostream>
+#include <vector>
 #include "stb_image.h"
 #include "glad/glad.h"
 
@@ -10,6 +11,7 @@ class Texture
 {
 public:
 	static Texture* Load(const char* filePath);
+	//static Texture* Empty() { return nullptr };
 	unsigned int GetId();
 	std::string type;
 private:

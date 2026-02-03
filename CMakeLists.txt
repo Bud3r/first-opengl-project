@@ -12,6 +12,6 @@ find_package(glm CONFIG REQUIRED)
 find_package(Jolt CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 
-add_executable(HelloWorld "main.cpp" "shader_program.h" "texture.h" "physics_server.h" "cube.h" "camera.h" "model.h" "mesh.h" "physics_body.h")
+add_executable(HelloWorld "main.cpp" "shader_program.h" "texture.h" "physics_server.h" "cube.h" "camera.h" "model.h" "mesh.h" "physics_body.h" "engine.h" "process_object.h" "resource_loader.h" "game_process_object.h")
 
 target_link_libraries(HelloWorld PRIVATE fmt::fmt PRIVATE glad::glad PRIVATE glfw PRIVATE glm::glm PRIVATE Jolt::Jolt PRIVATE assimp::assimp)

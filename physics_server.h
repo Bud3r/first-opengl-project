@@ -79,7 +79,7 @@ void SetupJolt() {
     RegisterTypes();
 }
 
-void EndJolt() {
+void DismantleJolt() {
     UnregisterTypes();
 
     delete Factory::sInstance;
