@@ -10,6 +10,7 @@ public:
 	PhysicsBody(PhysicsServer* p_physics_server, BodyCreationSettings p_body_creation_settings);
 	~PhysicsBody();
 	RVec3 GetPosition() const;
+	Quat GetRotation() const;
 	BodyID GetID() const;
 	operator BodyID() const { return m_body_id; }
 private:
@@ -36,8 +37,10 @@ BodyID PhysicsBody::GetID() const {
 }
 
 RVec3 PhysicsBody::GetPosition() const {
-	BodyInterface& body_interface = m_physics_server->m_physics_system.GetBodyInterface();
-	return body_interface.GetPosition(m_body_id);
+	return m_physics_server->m_physics_system.GetBodyInterface().GetPosition(m_body_id);
 }
 
-//BodyID PhysicsBody::operatio
+Quat PhysicsBody::GetRotation() const {
+	return m_physics_server->m_physics_system.GetBodyInterface().GetRotation(m_body_id);
+}
+

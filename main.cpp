@@ -117,10 +117,10 @@ int main()
     PhysicsServer physics_server;
 
     Model ak_model = Model(FILE_PATH(ak47.glb));
-    PhysicsBody ak_body(&physics_server, JPH::BodyCreationSettings(new JPH::BoxShape(Vec3Arg(0.5f, 0.5f, 0.5f)), RVec3(0.0, 2.0, 0.0), QuatArg::sIdentity(), EMotionType::Dynamic, Layers::MOVING));
-    PhysicsBody floor(&physics_server, JPH::BodyCreationSettings(new JPH::BoxShape(Vec3Arg(10.0f, 0.5f, 10.0f)), RVec3(0.0, -4.0, 0.0), QuatArg::sIdentity(), EMotionType::Static, Layers::STATIC));
-    physics_server.m_physics_system.GetBodyInterface().SetLinearVelocity(ak_body, RVec3Arg(0.0, -0.1, 0.0));
-
+    
+    PhysicsBody ak_body(&physics_server, JPH::BodyCreationSettings(new JPH::BoxShape(Vec3Arg(10.5f, 0.5f, 10.5f)), RVec3(0.0, 2.0, 0.0), QuatArg::sRotation(Vec3Arg(0.0_r, 0.0_r, 1.0_r), 0.1f), EMotionType::Dynamic, Layers::MOVING));
+    PhysicsBody floor(&physics_server, JPH::BodyCreationSettings(new JPH::SphereShape(0.5f), RVec3(0.0, -4.0, 0.0), QuatArg::sIdentity(), EMotionType::Static, Layers::STATIC));
+    physics_server.m_physics_system.GetBodyInterface().SetLinearVelocity(ak_body, RVec3Arg(0.0_r, -0.1_r, 0.0_r));
     unsigned int matrices_index = glGetUniformBlockIndex(program.getId(), "Matrices");
     glUniformBlockBinding(program.getId(), matrices_index, 0);
 
@@ -166,7 +166,9 @@ int main()
             );
 
         auto ak_body_pos = ak_body.GetPosition();
+        auto ak_body_rot = ak_body.GetRotation().GetEulerAngles();
         ak_model.m_position = vec3(ak_body_pos.GetX(), ak_body_pos.GetY(), ak_body_pos.GetZ());
+        ak_model.m_rotation = vec3(ak_body_rot.GetX(), ak_body_rot.GetY() + 0.9f, ak_body_rot.GetZ());
 
         camera.Move(movement);
 
