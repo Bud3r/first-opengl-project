@@ -30,7 +30,7 @@ public:
 			-sin(Rotation.x),
 			sin(Rotation.y) * cos(Rotation.x)
 		));
-		std::printf("(%f, %f, %f,)\n", camera_front.x, camera_front.y, camera_front.z);
+
 		glm::vec3 camera_right = glm::normalize(glm::cross(Up, camera_front));
 		
 		Position -= camera_front * movement.z;

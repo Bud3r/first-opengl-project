@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <cstdarg>
 #include <thread>
@@ -58,9 +60,15 @@ class PhysicsServer
 public:
     PhysicsServer();
     ~PhysicsServer();
-
+    void Update(float deltaTime);
+    uint32_t m_step_count = 0;
+    PhysicsSystem m_physics_system;
+    TempAllocatorImpl* temp_allocator;
+    JobSystemThreadPool* job_system;
 private:
-    //std::vector<uint> bodyIds;
+    MyBroadPhaseLayerInterface broad_phase_layer_interface;
+    ObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter;
+    ObjectLayerPairFilter object_layer_pair_filter;
 };
 
 
@@ -81,21 +89,15 @@ void EndJolt() {
 
 PhysicsServer::PhysicsServer()
 {
-    TempAllocatorImpl temp_allocator(10 * 1024 * 1024);
-    JobSystemThreadPool job_system(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+    temp_allocator = new TempAllocatorImpl(10 * 1024 * 1024);
+    job_system = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
     const uint cMaxBodies = 1024;
     const uint cNumBodyMutexes = 0;
     const uint cMaxBodyPairs = 1024;
     const uint cMaxContactConstraints = 1024;
 
-    MyBroadPhaseLayerInterface broad_phase_layer_interface;
-    ObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter;
-    ObjectLayerPairFilter object_layer_pair_filter;
-
-    PhysicsSystem physics_system;
-
-    physics_system.Init(
+    m_physics_system.Init(
         cMaxBodies,
         cNumBodyMutexes,
         cMaxBodyPairs,
@@ -104,48 +106,34 @@ PhysicsServer::PhysicsServer()
         object_vs_broad_phase_layer_filter,
         object_layer_pair_filter
     );
-
-    BodyInterface& body_interface = physics_system.GetBodyInterface();
-    BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
-    ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-    ShapeRefC floor_shape = floor_shape_result.Get();
-    BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, -1.0, 0.0), Quat::sIdentity(), EMotionType::Static, Layers::MOVING);
-    Body* floor = body_interface.CreateBody(floor_settings);
-
-    body_interface.AddBody(floor->GetID(), EActivation::Activate);
-
-    BodyCreationSettings sphere_settings(new SphereShape(0.5f), RVec3(0.0f, 2.0f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::STATIC);
-    BodyID sphere_id = body_interface.CreateAndAddBody(sphere_settings, EActivation::Activate);
-    body_interface.SetLinearVelocity(sphere_id, Vec3(0.0f, -5.0f, 0.0f));
-
-    const float cDeltaTime = 1.0f / 60.0f;
-    uint step_count = 0;
-
-    while (body_interface.IsActive(sphere_id))
-    {
-        const int cCollisionSteps = 1;
-
-        auto position = body_interface.GetPosition(sphere_id);
-        std::cout << position.GetX() << " " << position.GetY() << " " << position.GetY() << std::endl;
-        physics_system.Update(cDeltaTime, cCollisionSteps, &temp_allocator, &job_system);
-
-        step_count += cCollisionSteps;
-    }
-
-    body_interface.RemoveBody(sphere_id);
-    body_interface.DestroyBody(sphere_id);
-    body_interface.RemoveBody(floor->GetID());
-    body_interface.DestroyBody(floor->GetID());
-
-    std::printf("Body not active anymore");
 }
 
 PhysicsServer::~PhysicsServer()
 {
+    delete temp_allocator;
+    delete job_system;
+}
 
+void PhysicsServer::Update(float deltaTime) {
+    const int cCollisionSteps = 1;
+
+    m_physics_system.Update(deltaTime, cCollisionSteps, temp_allocator, job_system);
+
+    m_step_count += cCollisionSteps;
 }
 
 
-void add_body() {
-
-}
+//void example(Physci) {
+//    BodyInterface& body_interface = m_physics_system.GetBodyInterface();
+//    BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
+//    ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
+//    ShapeRefC floor_shape = floor_shape_result.Get();
+//    BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, -1.0, 0.0), Quat::sIdentity(), EMotionType::Static, Layers::MOVING);
+//    Body* floor = body_interface.CreateBody(floor_settings);
+//
+//    body_interface.AddBody(floor->GetID(), EActivation::Activate);
+//
+//    BodyCreationSettings sphere_settings(new SphereShape(0.5f), RVec3(0.0f, 2.0f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::STATIC);
+//    BodyID sphere_id = body_interface.CreateAndAddBody(sphere_settings, EActivation::Activate);
+//    body_interface.SetLinearVelocity(sphere_id, Vec3(0.0f, -5.0f, 0.0f));
+//}
