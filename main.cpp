@@ -1,21 +1,8 @@
 #include <iostream>
 
 #include "engine.h"
-#include <fmt/core.h>
-#include <glad/glad.h>
+#include "main_game_object.h"
 #include <GLFW/glfw3.h>
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-#include "shader_program.h"
-#include "texture.h"
-#include "physics_server.h"
-#include "cube.h"
-#include "camera.h"
-#include "time.h"
-#include "model.h"
-#include "physics_body.h"
-#include "game_process_object.h"
 
 #define FILE_PATH(file) "F:\\Misc\\cmake-test-project\\" #file
 
@@ -25,10 +12,9 @@ int main()
 
     Engine engine;
 
-    GameProcessObject* gpo = new GameProcessObject();
-    engine.AddProcessObject(gpo);
+    MainGameObject* main_game_object = new MainGameObject();
+    engine.AddProcessObject(main_game_object);
 
-    
     double lastFrameTime = 0.0;
 
     while (true)
