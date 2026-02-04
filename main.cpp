@@ -22,6 +22,7 @@
 int main()
 {
     Engine::Setup();
+
     Engine engine;
 
     GameProcessObject* gpo = new GameProcessObject();

@@ -63,7 +63,7 @@ T* ResourceLoader::Load(std::string filePath) {
 
 	ptr = extension_to_resource_loader[extension](filePath);
 	file_path_to_resource[filePath] = ptr;
-	std::printf("Ptr: %d\n", ptr);
+	//std::printf("Ptr: %d\n", ptr);
 
 	return (T*)ptr;
 }

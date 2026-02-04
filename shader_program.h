@@ -24,19 +24,18 @@ public:
 	void setFloat(const std::string &name, float value) const;
 
 private:
-	unsigned int ID;
+	GLuint ID;
 };
 
 ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 	int success;
 	char infoLog[InfoLogSize];
 
-	auto compileShader = [success, infoLog](const char* shaderPath, int shaderType) mutable -> int {
+	auto compileShader = [success, infoLog](const char* shaderPath, GLenum shaderType) mutable -> int {
 		std::string shaderCode;
 		std::ifstream shaderFile;
 
 		shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		
 		try {
 			shaderFile.open(shaderPath);
 			std::stringstream shaderStream;
@@ -54,7 +53,7 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 		glShaderSource(shaderId, 1, &cShaderCode, nullptr);
 		glCompileShader(shaderId);
 
-		glGetShaderiv(shaderId, shaderType, &success);
+		glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
 
 		if (!success) {
 			glGetShaderInfoLog(shaderId, InfoLogSize, NULL, infoLog);
@@ -66,13 +65,15 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 
 	uint32_t vertexId = compileShader(vertexPath, GL_VERTEX_SHADER);
 	uint32_t fragmentId = compileShader(fragmentPath, GL_FRAGMENT_SHADER);
-	
+
+
  	ID = glCreateProgram();
 	glAttachShader(ID, vertexId);
 	glAttachShader(ID, fragmentId);
 	glLinkProgram(ID);
 
 	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+
 
 	if (!success) {
 		glGetProgramInfoLog(ID, InfoLogSize, 0, infoLog);

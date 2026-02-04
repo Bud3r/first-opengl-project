@@ -45,10 +45,9 @@ void GameProcessObject::Process(double deltaTime) {
 
     auto ak_body_pos = ak_body.GetPosition();
     auto ak_body_rot = ak_body.GetRotation().GetEulerAngles();
-
-    ak_mesh->Draw(engine->GetDefaultShaderProgram());
-    //ak_model.m_position = vec3(ak_body_pos.GetX(), ak_body_pos.GetY(), ak_body_pos.GetZ());
-    //ak_model.m_rotation = vec3(ak_body_rot.GetX(), ak_body_rot.GetY() + 0.9f, ak_body_rot.GetZ());
+    ak_mesh->Draw(engine->test);
+    ak_mesh->m_position = vec3(ak_body_pos.GetX(), ak_body_pos.GetY(), ak_body_pos.GetZ());
+    ak_mesh->m_rotation = vec3(ak_body_rot.GetX(), ak_body_rot.GetY() + 0.9f, ak_body_rot.GetZ());
 
     camera.Move(movement);
 }

@@ -44,10 +44,11 @@ void Model::Draw(const ShaderProgram &program) {
 	model = glm::rotate(model, m_rotation.y, glm::vec3(0.0, 1.0, 0.0));
 	model = glm::rotate(model, m_rotation.z, glm::vec3(0.0, 0.0, 1.0));
 	model = glm::translate(model, m_position);
+	std::printf("%d -", glGetError());
 	program.use();
+	std::printf(" %d\n", glGetError());
 	glUniform4fv(program.getLocation("modulate"), 1, value_ptr(m_modulate));
 	glUniformMatrix4fv(program.getLocation("model"), 1, GL_FALSE, value_ptr(model));
-
 	for (auto mesh : meshes) {
 		mesh.Draw();
 	}
