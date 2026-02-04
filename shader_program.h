@@ -13,6 +13,7 @@ constexpr int InfoLogSize = 512;
 class ShaderProgram
 {
 public:
+	ShaderProgram() { };
 	ShaderProgram(const char* vertexPath, const char* fragmentPath);
 	~ShaderProgram();
 	void use() const;

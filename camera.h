@@ -23,8 +23,6 @@ public:
 	vec3 Target = vec3(0.0f, 0.0f, 0.0f);
 
 	void Move(vec3 movement) {
-		//glm::vec3 camera_direction = glm::normalize(Position - Target);
-		
 		vec3 camera_front = glm::normalize(vec3(
 			cos(Rotation.y) * cos(Rotation.x),
 			-sin(Rotation.x),

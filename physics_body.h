@@ -7,6 +7,7 @@
 class PhysicsBody
 {
 public:
+	PhysicsBody();
 	PhysicsBody(PhysicsServer* p_physics_server, BodyCreationSettings p_body_creation_settings);
 	~PhysicsBody();
 	RVec3 GetPosition() const;
@@ -17,6 +18,8 @@ private:
 	PhysicsServer* m_physics_server;
 	BodyID m_body_id;
 };
+
+PhysicsBody::PhysicsBody() { }
 
 PhysicsBody::PhysicsBody(PhysicsServer* p_physics_server, BodyCreationSettings p_body_creation_settings)
 {

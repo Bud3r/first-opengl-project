@@ -19,7 +19,6 @@ public:
 private:
 	std::map<std::string, LoaderFunc> extension_to_resource_loader;
 	std::map<std::string, void*> file_path_to_resource;
-	
 };
 
 void* LoadTexture(std::string path) {
@@ -48,6 +47,12 @@ void ResourceLoader::AddLoaderFunc(std::string extension, LoaderFunc loader_func
 template<typename T>
 T* ResourceLoader::Load(std::string filePath) {
 	void* ptr = 0;
+
+	// TODO: Check if the filePath can be a different object and be diff key.
+	if (file_path_to_resource.contains(filePath)) {
+		return (T*)file_path_to_resource[filePath];
+	}
+
 	auto i = filePath.find_last_of(".");
 
 	if (i == std::string::npos) {
@@ -58,7 +63,7 @@ T* ResourceLoader::Load(std::string filePath) {
 
 	ptr = extension_to_resource_loader[extension](filePath);
 	file_path_to_resource[filePath] = ptr;
-	std::printf("Ptd: %d\n", ptr);
+	std::printf("Ptr: %d\n", ptr);
 
 	return (T*)ptr;
 }

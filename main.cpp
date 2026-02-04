@@ -24,15 +24,21 @@ int main()
     Engine::Setup();
     Engine engine;
 
-    engine.process_objects.push_back(GameProcessObject(&engine));
+    GameProcessObject* gpo = new GameProcessObject();
+    engine.AddProcessObject(gpo);
 
+    
     double lastFrameTime = 0.0;
 
     while (true)
     {
-        double frameTime = 0.0;
+        double frameTime = glfwGetTime();
         double delta = frameTime - lastFrameTime;
-        engine.Update(delta);
+        lastFrameTime = frameTime;
+
+        if (delta > 0.0) {
+            engine.Update(delta);
+        }
     }
 
     Engine::Dismantle();

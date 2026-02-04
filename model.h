@@ -15,6 +15,7 @@ public:
 	std::vector<Mesh> meshes;
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
+	glm::vec4 m_modulate = vec4(4.0);
 private:
 	void parseNode(aiNode* node, const aiScene* scene);
 	Mesh parseMesh(aiMesh* mesh, const aiScene* scene);
@@ -44,7 +45,7 @@ void Model::Draw(const ShaderProgram &program) {
 	model = glm::rotate(model, m_rotation.z, glm::vec3(0.0, 0.0, 1.0));
 	model = glm::translate(model, m_position);
 	program.use();
-	glUniform4f(program.getLocation("modulate"), 1.0f, 1.0f, 1.0f, 1.0f);
+	glUniform4fv(program.getLocation("modulate"), 1, value_ptr(m_modulate));
 	glUniformMatrix4fv(program.getLocation("model"), 1, GL_FALSE, value_ptr(model));
 
 	for (auto mesh : meshes) {
