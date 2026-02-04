@@ -1,14 +1,12 @@
 #include "physics_body.h"
 
-PhysicsBody::PhysicsBody(PhysicsServer* p_physics_server, const BodyCreationSettings& p_body_creation_settings)
-{
+PhysicsBody::PhysicsBody(PhysicsServer* p_physics_server, const BodyCreationSettings& p_body_creation_settings) {
 	m_physics_server = p_physics_server;
 	BodyInterface& body_interface = p_physics_server->m_physics_system.GetBodyInterface();
 	m_body_id = body_interface.CreateAndAddBody(p_body_creation_settings, EActivation::Activate);
 }
 
-PhysicsBody::~PhysicsBody()
-{
+PhysicsBody::~PhysicsBody() {
 	Destroy();
 }
 
@@ -30,7 +28,7 @@ void PhysicsBody::Destroy() {
 }
 
 void PhysicsBody::SetLinearVelocity(Vec3Arg vec) const {
-	m_physics_server->m_physics_system.GetBodyInterface().SetLinearVelocity(GetID(), vec);
+	m_physics_server->m_physics_system.GetBodyInterface().SetLinearVelocity(m_body_id, vec);
 }
 
 BodyID PhysicsBody::GetID() const {

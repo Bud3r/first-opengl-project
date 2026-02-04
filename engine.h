@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "physics_server.h"
 #include "helper.h"
 #include "shader_program.h"
 #include "camera.h"
@@ -33,22 +34,28 @@ public:
 	static void Setup();
 	static void Dismantle();
 	void Update(double deltaTime);
-	void AddProcessObject(GameObject* process_object);
+	void add_game_object(GameObject* process_object);
+
 	PhysicsServer physics_server;
 	ResourceLoader resource_loader;
+
+	Camera* current_camera = nullptr;
+	std::vector<GameObject*> process_objects;
+
 	glm::vec2 movementInput;
 	glm::dvec2 mouseMovement;
 	glm::dvec2 mousePos;
-	Camera* current_camera;
-	std::vector<GameObject*> process_objects;
+
 	const ShaderProgram& GetDefaultShaderProgram() const;
 private:
-	ShaderProgram default_shader_program;
 	void ProcessInput(GLFWwindow* window);
 	GLFWwindow* CreateWindow();
+
+	ShaderProgram default_shader_program;
+
 	GLFWwindow* m_window;
+	glm::dvec2 lastMousePos;
 
 	unsigned int UBO;
-	glm::dvec2 lastMousePos;
 	double oldTime;
 };

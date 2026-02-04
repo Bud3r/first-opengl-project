@@ -13,7 +13,7 @@ int main()
     Engine engine;
 
     MainGameObject* main_game_object = new MainGameObject();
-    engine.AddProcessObject(main_game_object);
+    engine.add_game_object(main_game_object);
 
     double lastFrameTime = 0.0;
 

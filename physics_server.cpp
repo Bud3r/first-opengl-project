@@ -49,19 +49,3 @@ void PhysicsServer::Update(float deltaTime) {
 
     m_step_count += cCollisionSteps;
 }
-
-
-//void example(Physci) {
-//    BodyInterface& body_interface = m_physics_system.GetBodyInterface();
-//    BoxShapeSettings floor_shape_settings(Vec3(100.0f, 1.0f, 100.0f));
-//    ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
-//    ShapeRefC floor_shape = floor_shape_result.Get();
-//    BodyCreationSettings floor_settings(floor_shape, RVec3(0.0, -1.0, 0.0), Quat::sIdentity(), EMotionType::Static, Layers::MOVING);
-//    Body* floor = body_interface.CreateBody(floor_settings);
-//
-//    body_interface.AddBody(floor->GetID(), EActivation::Activate);
-//
-//    BodyCreationSettings sphere_settings(new SphereShape(0.5f), RVec3(0.0f, 2.0f, 0.0f), Quat::sIdentity(), EMotionType::Dynamic, Layers::STATIC);
-//    BodyID sphere_id = body_interface.CreateAndAddBody(sphere_settings, EActivation::Activate);
-//    body_interface.SetLinearVelocity(sphere_id, Vec3(0.0f, -5.0f, 0.0f));
-//}

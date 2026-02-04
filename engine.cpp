@@ -41,7 +41,7 @@ void Engine::Update(double deltaTime)
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	if (current_camera) {
+	if (current_camera != nullptr) {
 		glm::mat4 view = current_camera->GetViewMatrix();
 		glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view));
@@ -74,7 +74,7 @@ const ShaderProgram& Engine::GetDefaultShaderProgram() const {
 	return default_shader_program;
 }
 
-void Engine::AddProcessObject(GameObject* process_object) {
+void Engine::add_game_object(GameObject* process_object) {
 	process_object->engine = this;
 	process_objects.push_back(process_object);
 	process_object->AddedToEngine();
