@@ -42,9 +42,9 @@ public:
 	glm::dvec2 mousePos;
 	Camera* current_camera;
 	std::vector<ProcessObject*> process_objects;
-	ShaderProgram* GetDefaultShaderProgram();
-	ShaderProgram* default_shader_program;
+	const ShaderProgram& GetDefaultShaderProgram() const;
 private:
+	ShaderProgram default_shader_program;
 	void ProcessInput(GLFWwindow* window);
 	GLFWwindow* CreateWindow();
 	GLFWwindow* m_window;
@@ -59,7 +59,7 @@ void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-ShaderProgram* Engine::GetDefaultShaderProgram() {
+const ShaderProgram& Engine::GetDefaultShaderProgram() const {
 	return default_shader_program;
 }
 
@@ -89,7 +89,7 @@ void Engine::ProcessInput(GLFWwindow* window) {
 
 Engine::Engine() {
 	m_window = CreateWindow();
-	default_shader_program = new ShaderProgram(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
+	default_shader_program.Load(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
 
 	glfwGetCursorPos(m_window, &lastMousePos.x, &lastMousePos.y);
 
@@ -103,7 +103,6 @@ Engine::Engine() {
 
 Engine::~Engine() {
 	glfwDestroyWindow(m_window);
-	delete default_shader_program;
 }
 
 void Engine::Setup()

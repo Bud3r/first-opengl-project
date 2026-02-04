@@ -16,18 +16,22 @@ public:
 	ShaderProgram() { };
 	ShaderProgram(const char* vertexPath, const char* fragmentPath);
 	~ShaderProgram();
+	void Load(const char* vertexPath, const char* fragmentPath);
 	void use() const;
 	int getId() const;
 	GLint getLocation(const char* uniform) const;
 	void setBool(const std::string &name, bool value) const;
 	void setInt(const std::string &name, int value) const;
 	void setFloat(const std::string &name, float value) const;
-
 private:
 	GLuint ID;
 };
 
 ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
+	Load(vertexPath, fragmentPath);
+}
+
+void ShaderProgram::Load(const char* vertexPath, const char* fragmentPath) {
 	int success;
 	char infoLog[InfoLogSize];
 
@@ -59,7 +63,7 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 			glGetShaderInfoLog(shaderId, InfoLogSize, NULL, infoLog);
 			std::cout << "SHADER:COMP:FAILED | " << shaderPath << std::endl << infoLog << std::endl;
 		}
-		
+
 		return shaderId;
 		};
 
@@ -67,7 +71,7 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 	uint32_t fragmentId = compileShader(fragmentPath, GL_FRAGMENT_SHADER);
 
 
- 	ID = glCreateProgram();
+	ID = glCreateProgram();
 	glAttachShader(ID, vertexId);
 	glAttachShader(ID, fragmentId);
 	glLinkProgram(ID);
