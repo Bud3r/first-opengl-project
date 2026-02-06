@@ -16,6 +16,12 @@ Engine::Engine() {
 	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	glBindBufferRange(GL_UNIFORM_BUFFER, UBO_BINDING, UBO, 0, 2 * sizeof(glm::mat4));
+
+	glEnable(GL_DEPTH_TEST);
+
+	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (glfwRawMouseMotionSupported())
+		glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 }
 
 Engine::~Engine() {
@@ -25,8 +31,6 @@ Engine::~Engine() {
 void Engine::Update(double deltaTime)
 {
 	physics_server.Update((float)deltaTime);
-
-	ProcessInput(m_window);
 
 	glfwGetCursorPos(m_window, &mousePos.x, &mousePos.y);
 
@@ -39,15 +43,17 @@ void Engine::Update(double deltaTime)
 	}
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (current_camera != nullptr) {
+		glBindBuffer(GL_UNIFORM_BUFFER, UBO);
+
 		glm::mat4 view = current_camera->GetViewMatrix();
-		glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view));
+
 		glm::mat4 projection = current_camera->GetProjectionMatrix(static_cast<float>(INIT_WINDOW_WIDTH) / static_cast<float>(INIT_WINDOW_HEIGHT));
-		glBindBuffer(GL_UNIFORM_BUFFER, UBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
+
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
@@ -80,26 +86,6 @@ void Engine::add_game_object(GameObject* process_object) {
 	process_object->AddedToEngine();
 }
 
-void Engine::ProcessInput(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-
-	movementInput = glm::vec2(
-		(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? -1.0f : 0.0f) + (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? 1.0f : 0.0f),
-		(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ? -1.0f : 0.0f) + (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ? 1.0f : 0.0f)
-	);
-
-	if (movementInput.x != 0.0f || movementInput.y != 0.0f) {
-		movementInput = glm::normalize(movementInput);
-	}
-
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	if (glfwRawMouseMotionSupported())
-		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-}
-
-
-
 GLFWwindow* Engine::CreateWindow()
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -114,5 +100,6 @@ GLFWwindow* Engine::CreateWindow()
 	}
 	glViewport(0, 0, INIT_WINDOW_WIDTH, INIT_WINDOW_HEIGHT);
 	glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
+	Input_init(window);
 	return window;
 }

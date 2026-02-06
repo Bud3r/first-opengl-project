@@ -18,11 +18,32 @@
 #include "physics_body.h"
 #include "game_object.h"
 #include "resource_loader.h"
+#include "input_manager.h"
 
 constexpr int UBO_BINDING = 0;
 constexpr int INIT_WINDOW_WIDTH = 800;
 constexpr int INIT_WINDOW_HEIGHT = 600;
 constexpr int ERR_LOG_SIZE = 512;
+
+inline void print_vec(glm::vec4 vec) {
+	std::printf("(%f, %f, %f, %f)\n", vec.x, vec.y, vec.z, vec.w);
+}
+
+inline void print_vec(glm::vec3 vec) {
+	std::printf("(%f, %f, %f)\n", vec.x, vec.y, vec.z);
+}
+
+inline void print_vec(glm::vec2 vec) {
+	std::printf("(%f, %f)\n", vec.x, vec.y);
+}
+
+inline glm::vec3 RVec3tovec3(JPH::RVec3 vec) {
+	return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ());
+}
+
+inline glm::vec3 Vec3tovec3(JPH::Vec3 vec) {
+	return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ());
+}
 
 void _framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -48,7 +69,6 @@ public:
 
 	const ShaderProgram& GetDefaultShaderProgram() const;
 private:
-	void ProcessInput(GLFWwindow* window);
 	GLFWwindow* CreateWindow();
 
 	ShaderProgram default_shader_program;

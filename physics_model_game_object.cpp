@@ -10,11 +10,14 @@ void PhysicsModelGameObject::Process(double deltaTime)
 {
     auto position = m_body.GetPosition();
     auto rotation = m_body.GetRotation().GetEulerAngles();
+
     m_model->Draw(
         engine->GetDefaultShaderProgram(), 
         Model::create_model_matrix(
             glm::vec3(position.GetX(), position.GetY(), position.GetZ()),
-            glm::vec3(rotation.GetX(), rotation.GetY(), rotation.GetZ())));
+            glm::vec3(rotation.GetX(), rotation.GetY(), rotation.GetZ()))
+    
+    );
 }
 
 void PhysicsModelGameObject::AddedToEngine()

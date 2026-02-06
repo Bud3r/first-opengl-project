@@ -5,6 +5,7 @@
 
 
 class Engine;
+struct InputEvent;
 
 
 class GameObject
@@ -17,6 +18,7 @@ public:
 	};
 	virtual void AddedToEngine() { };
 	virtual void Process(double deltaTime) { };
+	virtual void process_input(InputEvent& event) { };
 	/// <summary>
 	/// Engine pointer is set after constructor but before the AddedToEngine().
 	/// Use get_engine for the asse

@@ -17,10 +17,14 @@ class Model
 {
 public:
 	Model(const char* filePath);
+	Model() { };
+	Model(Mesh* mesh) {
+		meshes.push_back(mesh);
+	}
 	void Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4 p_modulate = glm::vec4(1.0));
 	glm::mat4 static create_model_matrix(glm::vec3 p_position, glm::vec3 p_rotation);
-	std::vector<Mesh> meshes;
+	std::vector<Mesh*> meshes;
 private:
 	void parseNode(aiNode* node, const aiScene* scene);
-	Mesh parseMesh(aiMesh* mesh, const aiScene* scene);
+	Mesh* parseMesh(aiMesh* mesh, const aiScene* scene);
 };

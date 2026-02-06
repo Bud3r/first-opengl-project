@@ -29,7 +29,7 @@ void Model::Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4
 	glUniform4fv(program.getLocation("modulate"), 1, glm::value_ptr(p_modulate));
 	glUniformMatrix4fv(program.getLocation("model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
 	for (auto mesh : meshes) {
-		mesh.Draw();
+		mesh->Draw();
 	}
 }
 
@@ -46,7 +46,7 @@ void Model::parseNode(aiNode* node, const aiScene* scene) {
 	}
 }
 
-Mesh Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
+Mesh* Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
 	std::vector<Texture*> textures;
@@ -74,5 +74,5 @@ Mesh Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 		}
 	}
 
-	return Mesh(vertices, indices, textures);
+	return new Mesh(vertices, indices, textures);
 }
