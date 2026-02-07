@@ -11,6 +11,7 @@ public:
 	PhysicsBody& GetBody();
 	virtual void AddedToEngine() override;
 	virtual void Process(double deltaTime) override;
+	glm::vec4 modulate = glm::vec4(1.0);
 private:
 	Model* m_model;
 	PhysicsBody m_body;

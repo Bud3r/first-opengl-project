@@ -5,7 +5,11 @@ void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+bool _show_demo_window = true;
+
+
 Engine::Engine() {
+	//float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
 	m_window = CreateWindow();
 	default_shader_program.Load(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
 
@@ -22,6 +26,21 @@ Engine::Engine() {
 	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	if (glfwRawMouseMotionSupported())
 		glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); 
+	(void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+	ImGui::StyleColorsDark();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.ScaleAllSizes(1.0f);
+
+	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+	
+	ImGui_ImplOpenGL3_Init("#version 450");
 }
 
 Engine::~Engine() {
@@ -30,6 +49,12 @@ Engine::~Engine() {
 
 void Engine::Update(double deltaTime)
 {
+	glfwMakeContextCurrent(m_window);
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
 	physics_server.Update((float)deltaTime);
 
 	glfwGetCursorPos(m_window, &mousePos.x, &mousePos.y);
@@ -57,9 +82,16 @@ void Engine::Update(double deltaTime)
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
+	if (_show_demo_window){
+		ImGui::ShowDemoWindow(&_show_demo_window);
+	}
+
 	for (auto obj : process_objects) {
 		obj->Process(deltaTime);
 	}
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();
@@ -73,6 +105,9 @@ void Engine::Setup()
 
 void Engine::Dismantle()
 {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	DismantleJolt();
 }
 

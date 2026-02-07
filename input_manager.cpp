@@ -1,5 +1,7 @@
 #include "input_manager.h"
 
+int Input_key_mouse_enable = GLFW_KEY_0;
+
 std::map<std::string, Action> actions;
 std::list<GameObject*> input_callback_game_objects;
 
@@ -102,6 +104,19 @@ void _key_callback(GLFWwindow* window, int key, int scancode, int action, int mo
 	bool pressed = GLFW_RELEASE != action;
 	float strength = 0.0f;
 	PressFlags press_type = PressFlags::NONE;
+
+	if (key == Input_key_mouse_enable) {
+		if (action == GLFW_PRESS) {
+			GLFWwindow* window = glfwGetCurrentContext();
+			int cursor_mode = glfwGetInputMode(window, GLFW_CURSOR);
+			if (cursor_mode == GLFW_CURSOR_DISABLED) {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			}
+			else {
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			}
+		}
+	}
 
 	if (m_key_pressed[key] != pressed) {
 		press_type = press_type | PressFlags::JUST;

@@ -33,7 +33,6 @@ Mesh* _create_square_mesh(glm::vec3 e) {
 
 
 void MainGameObject::AddedToEngine() {
-    Input_add_action("move", InputEventType::KEYBOARD, { GLFW_KEY_D, GLFW_KEY_A, GLFW_KEY_W, GLFW_KEY_S });
     get_engine().physics_server.m_physics_system.SetGravity(Vec3Arg(0.0, -0.1, 0.0));
 
     auto ak_body_settings = BodyCreationSettings(
@@ -52,10 +51,12 @@ void MainGameObject::AddedToEngine() {
         );
 
     Model* ak_model = get_engine().resource_loader.load<Model>(FILE_PATH(ak47.glb));
+
     Mesh* floor_mesh = _create_square_mesh(glm::vec3(8.0f, 0.1f, 8.0f));
     Model* floor_model = new Model(floor_mesh);
     floor_game_object = new PhysicsModelGameObject(floor_model, &floor_body_settings);
     get_engine().add_game_object(floor_game_object);
+    floor_game_object->modulate = glm::vec4(0.5, 0.5, 0.5, 1.0);
 
     ak_game_object = new PhysicsModelGameObject(ak_model, &ak_body_settings);
     get_engine().add_game_object(ak_game_object);

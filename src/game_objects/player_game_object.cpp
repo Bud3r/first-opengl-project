@@ -1,14 +1,25 @@
 #include "player_game_object.h"
-
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 
 constexpr int JUMP_KEY = GLFW_KEY_SPACE;
 
+inline JPH::Vec3 euler_to_forward(glm::vec3 euler) {
+    return JPH::Vec3(
+        cos(euler.y),
+        0.0f,
+        sin(euler.y)
+    ).Normalized();
+}
+
 
 void PlayerGameObject::AddedToEngine() {
+    Input_add_action("move", InputEventType::KEYBOARD, { GLFW_KEY_D, GLFW_KEY_A, GLFW_KEY_W, GLFW_KEY_S });
     Input_add_callback(this);
     get_engine().current_camera = &camera;
 	body.Init(&get_engine().physics_server, BodyCreationSettings(
-        new BoxShape(Vec3Arg(0.2f, 0.2f, 0.2f)),
+        new CapsuleShape(1.0f, 0.5f),
         RVec3Arg(0.0_r, 0.0_r, 0.0_r),
         QuatArg::sIdentity(),
         EMotionType::Dynamic,
@@ -17,8 +28,9 @@ void PlayerGameObject::AddedToEngine() {
 }
 
 void PlayerGameObject::Process(double delta_time) {
-    camera.Rotation.y += static_cast<float>(get_engine().mouseMovement.x);
-    camera.Rotation.x = glm::clamp(camera.Rotation.x + static_cast<float>(get_engine().mouseMovement.y), glm::radians(-89.0f), glm::radians(89.0f));
+    camera_rotation.y += static_cast<float>(get_engine().mouseMovement.x);
+    camera_rotation.x = glm::clamp(camera.Rotation.x + static_cast<float>(get_engine().mouseMovement.y), glm::radians(-89.0f), glm::radians(89.0f));
+    camera.Rotation = camera_rotation;
     camera.Position = RVec3tovec3(body.GetPosition());
 
     glm::vec2 movement_input = Input_get_action_2d("move", InputEventType::KEYBOARD);
@@ -28,11 +40,7 @@ void PlayerGameObject::Process(double delta_time) {
     JPH::Vec3 camera_front;
     
     if (noclip) {
-        camera_front = JPH::Vec3(
-            cos(camera.Rotation.y) * cos(camera.Rotation.x),
-            -sin(camera.Rotation.x),
-            sin(camera.Rotation.y) * cos(camera.Rotation.x)
-        ).Normalized();
+        camera_front = euler_to_forward(camera.Rotation);
     }
     else {
         camera_front = JPH::Vec3(
@@ -41,6 +49,7 @@ void PlayerGameObject::Process(double delta_time) {
             cos(camera.Rotation.y)
         ).Normalized();
     }
+    
     
     JPH::Vec3 camera_right = up.Cross(camera_front);
 
@@ -62,11 +71,9 @@ void PlayerGameObject::Process(double delta_time) {
     body.SetLinearVelocity(velocity);
 
     float gravity = 1.0f;
+    gravity = 0.0;
     float max_fall_speed = -2.0f;
     vertical_velocity = max(max_fall_speed, static_cast<float>(vertical_velocity - gravity * delta_time));
-    
-    printf("Pos: ");
-    print_vec(RVec3tovec3(body.GetPosition()));
 }
 
 
@@ -75,5 +82,22 @@ void PlayerGameObject::process_input(InputEvent& input_event) {
         && input_event.m_key_label == JUMP_KEY
         && (input_event.m_press_flags == PressFlags::JUST_PRESSED)) {
         vertical_velocity = 1.0f;
+    }
+    if (input_event.m_type == InputEventType::KEYBOARD
+        && input_event.m_key_label == GLFW_KEY_Q
+        && (input_event.m_press_flags == PressFlags::JUST_PRESSED)) {
+        
+        float length = 5.0f;
+        auto start_point = Vec3Arg(camera.Position.x, camera.Position.y, camera.Position.z);
+        auto direction = euler_to_forward(camera.Rotation) * length;
+        auto ray_cast = JPH::RRayCast(start_point, direction);
+        auto result = JPH::RayCastResult();
+        auto body_ignore_filter = JPH::IgnoreSingleBodyFilter(body);
+        bool hit = get_engine().physics_server.m_physics_system.GetNarrowPhaseQuery().CastRay(ray_cast, result, {}, {}, body_ignore_filter);
+        Vec3 end_point = hit ? (start_point + direction * result.mFraction) : start_point + direction;
+        print_vec(Vec3tovec3(start_point + direction));
+        auto body_creation_setting = BodyCreationSettings(new SphereShape(0.5f), end_point, QuatArg::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
+        PhysicsModelGameObject* object = new PhysicsModelGameObject(get_engine().resource_loader.load<Model>(FILE_PATH(assets\\ball\\ball.glb)), &body_creation_setting);
+        get_engine().add_game_object(object);
     }
 }
