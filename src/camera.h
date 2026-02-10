@@ -18,7 +18,6 @@ public:
 	glm::vec3 Position = glm::vec3(0.0f);
 	glm::vec3 Rotation = glm::vec3(0.0f);
 
-	void Move(glm::vec3 p_movement);
 	glm::mat4 GetViewMatrix();
 	glm::mat4 GetProjectionMatrix(float ratio);
 };

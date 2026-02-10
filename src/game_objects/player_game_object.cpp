@@ -7,9 +7,9 @@ constexpr int JUMP_KEY = GLFW_KEY_SPACE;
 
 inline JPH::Vec3 euler_to_forward(glm::vec3 euler) {
     return JPH::Vec3(
-        cos(euler.y),
+        sin(euler.y),
         0.0f,
-        sin(euler.y)
+        cos(euler.y)
     ).Normalized();
 }
 
@@ -35,7 +35,7 @@ void PlayerGameObject::Process(double delta_time) {
 
     glm::vec2 movement_input = Input_get_action_2d("move", InputEventType::KEYBOARD);
 
-    float move_speed = 1.0f;
+    float move_speed = 4.0f;
 
     JPH::Vec3 camera_front;
     
@@ -44,14 +44,14 @@ void PlayerGameObject::Process(double delta_time) {
     }
     else {
         camera_front = JPH::Vec3(
-            sin(camera.Rotation.y),
-            0.0,
-            cos(camera.Rotation.y)
+            cos(camera.Rotation.y),
+            0.0f,
+            sin(camera.Rotation.y)
         ).Normalized();
     }
     
     
-    JPH::Vec3 camera_right = up.Cross(camera_front);
+    JPH::Vec3 camera_right = camera_front.Cross(up).Normalized();
 
     JPH::Vec3 movement_dir = (camera_front * movement_input.y + camera_right * movement_input.x) * move_speed;
 
@@ -70,8 +70,7 @@ void PlayerGameObject::Process(double delta_time) {
 
     body.SetLinearVelocity(velocity);
 
-    float gravity = 1.0f;
-    gravity = 0.0;
+    float gravity = 9.8f;
     float max_fall_speed = -2.0f;
     vertical_velocity = max(max_fall_speed, static_cast<float>(vertical_velocity - gravity * delta_time));
 }
@@ -81,7 +80,7 @@ void PlayerGameObject::process_input(InputEvent& input_event) {
     if (input_event.m_type == InputEventType::KEYBOARD
         && input_event.m_key_label == JUMP_KEY
         && (input_event.m_press_flags == PressFlags::JUST_PRESSED)) {
-        vertical_velocity = 1.0f;
+        vertical_velocity = 4.0f;
     }
     if (input_event.m_type == InputEventType::KEYBOARD
         && input_event.m_key_label == GLFW_KEY_Q
@@ -95,7 +94,10 @@ void PlayerGameObject::process_input(InputEvent& input_event) {
         auto body_ignore_filter = JPH::IgnoreSingleBodyFilter(body);
         bool hit = get_engine().physics_server.m_physics_system.GetNarrowPhaseQuery().CastRay(ray_cast, result, {}, {}, body_ignore_filter);
         Vec3 end_point = hit ? (start_point + direction * result.mFraction) : start_point + direction;
-        print_vec(Vec3tovec3(start_point + direction));
+        printf("Start: ");
+        print_vec(Vec3tovec3(start_point));
+        printf("Dir:");
+        print_vec(Vec3tovec3(direction));
         auto body_creation_setting = BodyCreationSettings(new SphereShape(0.5f), end_point, QuatArg::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
         PhysicsModelGameObject* object = new PhysicsModelGameObject(get_engine().resource_loader.load<Model>(FILE_PATH(assets\\ball\\ball.glb)), &body_creation_setting);
         get_engine().add_game_object(object);

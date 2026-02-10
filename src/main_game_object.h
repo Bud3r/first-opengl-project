@@ -2,7 +2,7 @@
 
 
 #include "physics_model_game_object.h"
-#include "src/game_objects/player_game_object.h"
+#include "game_objects/player_game_object.h"
 
 class GameObject;
 

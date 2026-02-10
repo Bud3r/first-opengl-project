@@ -54,10 +54,13 @@ class Engine
 public:
 	Engine();
 	~Engine();
-	static void Setup();
-	static void Dismantle();
 	void Update(double deltaTime);
 	void add_game_object(GameObject* process_object);
+	void start();
+	template<typename T>
+	void set_root_game_object() {
+		add_game_object(new T);
+	}
 
 	PhysicsServer physics_server;
 	ResourceLoader resource_loader;

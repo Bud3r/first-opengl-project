@@ -9,7 +9,9 @@ bool _show_demo_window = true;
 
 
 Engine::Engine() {
-	//float main_scale = ImGui_ImplGlfw_GetContentScaleForMonitor(glfwGetPrimaryMonitor());
+	SetupJolt();
+	glfwInit();
+
 	m_window = CreateWindow();
 	default_shader_program.Load(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
 
@@ -44,7 +46,14 @@ Engine::Engine() {
 }
 
 Engine::~Engine() {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+	DismantleJolt();
+
 	glfwDestroyWindow(m_window);
+	glfwTerminate();
+
 }
 
 void Engine::Update(double deltaTime)
@@ -84,6 +93,7 @@ void Engine::Update(double deltaTime)
 
 	if (_show_demo_window){
 		ImGui::ShowDemoWindow(&_show_demo_window);
+		_show_demo_window = false;
 	}
 
 	for (auto obj : process_objects) {
@@ -97,20 +107,6 @@ void Engine::Update(double deltaTime)
 	glfwPollEvents();
 }
 
-void Engine::Setup()
-{
-	SetupJolt();
-	glfwInit();
-}
-
-void Engine::Dismantle()
-{
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	DismantleJolt();
-}
-
 const ShaderProgram& Engine::GetDefaultShaderProgram() const {
 	return default_shader_program;
 }
@@ -119,6 +115,21 @@ void Engine::add_game_object(GameObject* process_object) {
 	process_object->engine = this;
 	process_objects.push_back(process_object);
 	process_object->AddedToEngine();
+}
+
+void Engine::start() {
+	double lastFrameTime = 0.0;
+
+	while (true)
+	{
+		double frameTime = glfwGetTime();
+		double delta = frameTime - lastFrameTime;
+		lastFrameTime = frameTime;
+
+		if (delta > 0.0) {
+			Update(delta);
+		}
+	}
 }
 
 GLFWwindow* Engine::CreateWindow()
