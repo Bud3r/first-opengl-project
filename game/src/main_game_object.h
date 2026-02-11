@@ -2,10 +2,10 @@
 
 
 #include "physics_model_game_object.h"
-#include "game_objects/player_game_object.h"
+#include "player_game_object.h"
+
 
 class GameObject;
-
 
 class MainGameObject : public GameObject
 {

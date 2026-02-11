@@ -4,6 +4,7 @@
 #include <cstdarg>
 #include <thread>
 #include <Jolt/Jolt.h>
+#include <memory>
 
 // Jolt includes
 #include <Jolt/RegisterTypes.h>
@@ -66,8 +67,8 @@ public:
     void Update(float deltaTime);
     uint32_t m_step_count = 0;
     PhysicsSystem m_physics_system;
-    TempAllocatorImpl* temp_allocator;
-    JobSystemThreadPool* job_system;
+    std::unique_ptr<TempAllocatorImpl> temp_allocator;
+    std::unique_ptr<JobSystemThreadPool> job_system;
 private:
     MyBroadPhaseLayerInterface broad_phase_layer_interface;
     ObjectVsBroadPhaseLayerFilter object_vs_broad_phase_layer_filter;

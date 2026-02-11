@@ -9,7 +9,6 @@ bool _show_demo_window = true;
 
 
 Engine::Engine() {
-	SetupJolt();
 	glfwInit();
 
 	m_window = CreateWindow();
@@ -49,8 +48,6 @@ Engine::~Engine() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-	DismantleJolt();
-
 	glfwDestroyWindow(m_window);
 	glfwTerminate();
 

@@ -3,7 +3,9 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(HelloWorld)
+
+# Core
+project(BudderEngine)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -13,46 +15,48 @@ find_package(Jolt CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 
-add_executable(HelloWorld 
-	"src/main.cpp" 
-	"src/mesh.cpp" 
-	"src/model.cpp" 
-	"src/physics_body.cpp" 
-	"src/physics_server.cpp"
-	"src/resource_loader.cpp" 
-	"src/game_object.cpp" 
-	"src/camera.cpp" 
-	"src/main_game_object.cpp" 
-	"src/physics_model_game_object.cpp" 
-	"src/shader_program.cpp" 
-	"src/texture.cpp" 
-	"src/input_manager.cpp" 
-	"src/game_objects/player_game_object.cpp"
-	"src/engine.cpp"
+add_library(
+	BudderEngine-Core
+	STATIC
+	"core/helper.h"
+	"core/camera.cpp" "core/camera.h"
+	"core/engine.cpp" "core/engine.h"
+	"core/game_object.cpp" "core/game_object.h"
+	"core/input_manager.cpp" "core/input_manager.h"
+	"core/mesh.cpp" "core/mesh.h"
+	"core/model.cpp" "core/model.h"
+	"core/physics_body.cpp" "core/physics_body.h"
+	"core/physics_server.cpp" "core/physics_server.h"
+	"core/resource_loader.cpp" "core/resource_loader.h"
+	"core/shader_program.cpp" "core/shader_program.h"
+	"core/texture.cpp" "core/texture.h"
 )
-	#"src/input_manager.h" 
-	#"src/game_objects/player_game_object.h" 
-	#"src/main_game_object.h"
-	#"src/shader_program.h" 
-	#"src/texture.h" 
-	#"src/physics_server.h"  
-	#"src/camera.h" 
-	#"src/model.h" 
-	#"src/mesh.h" 
-	#"src/physics_body.h" 
-	#"src/engine.h"
-	#"src/game_object.h"
-	#"src/resource_loader.h" 
-	#"src/physics_model_game_object.h" 
-	
-target_include_directories(HelloWorld PRIVATE "include")
 
-target_link_libraries(HelloWorld 
-	PRIVATE fmt::fmt 
-	PRIVATE glad::glad 
-	PRIVATE glfw 
-	PRIVATE glm::glm 
-	PRIVATE Jolt::Jolt 
-	PRIVATE assimp::assimp 
-	PRIVATE imgui::imgui
+target_include_directories(BudderEngine-Core PUBLIC "core/include")
+
+target_link_libraries(BudderEngine-Core
+	PUBLIC fmt::fmt 
+	PUBLIC glad::glad 
+	PUBLIC glfw 
+	PUBLIC glm::glm 
+	PUBLIC Jolt::Jolt 
+	PUBLIC assimp::assimp 
+	PUBLIC imgui::imgui
+)
+
+#Game
+add_executable(BudderEngine-Game
+	"game/src/main.cpp"
+	"game/src/player_game_object.cpp" "game/src/player_game_object.h"
+	"game/src/main_game_object.cpp" "game/src/main_game_object.h"
+	"game/src/physics_model_game_object.cpp" "game/src/physics_model_game_object.h"
+)
+
+target_include_directories(BudderEngine-Game 
+	PRIVATE 
+	"core"
+)
+
+target_link_libraries(BudderEngine-Game
+	PRIVATE BudderEngine-Core
 )

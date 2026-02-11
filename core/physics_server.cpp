@@ -1,24 +1,15 @@
 #include "physics_server.h"
 
-void SetupJolt() {
+
+PhysicsServer::PhysicsServer()
+{
     RegisterDefaultAllocator();
     Factory::sInstance = new Factory();
 
     RegisterTypes();
-}
 
-void DismantleJolt() {
-    UnregisterTypes();
-
-    delete Factory::sInstance;
-    Factory::sInstance = nullptr;
-}
-
-
-PhysicsServer::PhysicsServer()
-{
-    temp_allocator = new TempAllocatorImpl(10 * 1024 * 1024);
-    job_system = new JobSystemThreadPool(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+    temp_allocator = std::make_unique<TempAllocatorImpl>(10 * 1024 * 1024);
+    job_system = std::make_unique<JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
     const uint cMaxBodies = 1024;
     const uint cNumBodyMutexes = 0;
@@ -26,7 +17,7 @@ PhysicsServer::PhysicsServer()
     const uint cMaxContactConstraints = 1024;
 
     m_physics_system.Init(
-        cMaxBodies,
+        cMaxBodies ,
         cNumBodyMutexes,
         cMaxBodyPairs,
         cMaxContactConstraints,
@@ -36,16 +27,18 @@ PhysicsServer::PhysicsServer()
     );
 }
 
-PhysicsServer::~PhysicsServer()
-{
-    delete temp_allocator;
-    delete job_system;
+PhysicsServer::~PhysicsServer() {
+    UnregisterTypes();
+
+    delete Factory::sInstance;
+    Factory::sInstance = nullptr;
 }
+
 
 void PhysicsServer::Update(float deltaTime) {
     const int cCollisionSteps = 1;
 
-    m_physics_system.Update(deltaTime, cCollisionSteps, temp_allocator, job_system);
+    m_physics_system.Update(deltaTime, cCollisionSteps, temp_allocator.get(), job_system.get());
 
     m_step_count += cCollisionSteps;
 }

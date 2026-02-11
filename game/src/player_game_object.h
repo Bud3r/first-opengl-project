@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../physics_model_game_object.h"
-#include "../game_object.h"
-#include "../engine.h"
+#include "physics_model_game_object.h"
+#include "engine.h"
 #include <glm/glm.hpp>
 
 
