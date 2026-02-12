@@ -99,7 +99,7 @@ void PlayerGameObject::process_input(InputEvent& input_event) {
         printf("Dir:");
         print_vec(Vec3tovec3(direction));
         auto body_creation_setting = BodyCreationSettings(new SphereShape(0.5f), end_point, QuatArg::sIdentity(), EMotionType::Dynamic, Layers::MOVING);
-        PhysicsModelGameObject* object = new PhysicsModelGameObject(get_engine().resource_loader.load<Model>(FILE_PATH(assets\\ball\\ball.glb)), &body_creation_setting);
+        PhysicsModelGameObject* object = new PhysicsModelGameObject(get_engine().resource_loader.load<Model>("ball/ball.glb"), & body_creation_setting);
         get_engine().add_game_object(object);
     }
 }

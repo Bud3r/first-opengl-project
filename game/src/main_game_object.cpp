@@ -50,7 +50,7 @@ void MainGameObject::AddedToEngine() {
         Layers::STATIC
         );
 
-    Model* ak_model = get_engine().resource_loader.load<Model>(FILE_PATH(ak47.glb));
+    Model* ak_model = get_engine().resource_loader.load<Model>("ak47.glb");
 
     Mesh* floor_mesh = _create_square_mesh(glm::vec3(8.0f, 0.1f, 8.0f));
     Model* floor_model = new Model(floor_mesh);

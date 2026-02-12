@@ -3,8 +3,9 @@
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_definitions(DEBUG_ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
+add_compile_definitions(COMPILE_ASSETS_PATH="./assets/")
 
-# Core
 project(BudderEngine)
 
 find_package(fmt CONFIG REQUIRED)
@@ -30,7 +31,7 @@ add_library(
 	"core/resource_loader.cpp" "core/resource_loader.h"
 	"core/shader_program.cpp" "core/shader_program.h"
 	"core/texture.cpp" "core/texture.h"
-)
+ "core/helper.cpp")
 
 target_include_directories(BudderEngine-Core PUBLIC "core/include")
 
@@ -44,7 +45,7 @@ target_link_libraries(BudderEngine-Core
 	PUBLIC imgui::imgui
 )
 
-#Game
+# - You can change the name "BudderEngine-Game" to anything you want.
 add_executable(BudderEngine-Game
 	"game/src/main.cpp"
 	"game/src/player_game_object.cpp" "game/src/player_game_object.h"

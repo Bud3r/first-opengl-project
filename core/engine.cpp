@@ -1,6 +1,5 @@
 #include "engine.h"
 
-
 void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
@@ -12,7 +11,7 @@ Engine::Engine() {
 	glfwInit();
 
 	m_window = CreateWindow();
-	default_shader_program.Load(FILE_PATH(shader.vert), FILE_PATH(shader.frag));
+	default_shader_program.Load(get_real_file_path("shaders/shader.vert").c_str(), get_real_file_path("shaders/shader.frag").c_str());
 
 	glfwGetCursorPos(m_window, &lastMousePos.x, &lastMousePos.y);
 

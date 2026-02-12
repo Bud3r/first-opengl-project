@@ -2,6 +2,8 @@
 
 #include <string>
 #include <map>
+#include <filesystem>
+#include "helper.h"
 #include "model.h"
 #include "texture.h"
 
@@ -25,23 +27,35 @@ void* _load_model(std::string path);
 
 template<typename T>
 T* ResourceLoader::load(std::string p_file_path) {
+	std::string real_path = get_real_file_path(p_file_path);
+
 	void* ptr = 0;
 
-	// TODO: Check if the filePath can be a different object and be diff key.
-	if (file_path_to_resource.contains(p_file_path)) {
-		return (T*)file_path_to_resource[p_file_path];
+	if (!std::filesystem::exists(real_path)) {
+		throw std::logic_error(real_path + " does not exist.");
 	}
 
-	auto i = p_file_path.find_last_of(".");
+	if (file_path_to_resource.contains(real_path)) {
+		std::cout << ("Loaded already loaded file: " + real_path) << std::endl;
+		return (T*)file_path_to_resource[real_path];
+	}
+
+	auto i = real_path.find_last_of(".");
 
 	if (i == std::string::npos) {
-		throw nullptr;
+		throw std::logic_error(real_path + " has no file extension");
 	}
 
-	auto extension = p_file_path.substr(i);
+	auto extension = real_path.substr(i);
 
-	ptr = extension_to_resource_loader[extension](p_file_path);
-	file_path_to_resource[p_file_path] = ptr;
+	ptr = extension_to_resource_loader[extension](real_path);
+	file_path_to_resource[real_path] = ptr;
+	
 
+	if (i == std::string::npos) {
+		throw std::logic_error("Function failed to load file " + real_path);
+	}
+	
+	std::cout << ("Loaded file: " + real_path) << std::endl;
 	return (T*)ptr;
 }

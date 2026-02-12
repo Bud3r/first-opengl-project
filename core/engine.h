@@ -11,6 +11,9 @@
 #include <glm\gtc\type_ptr.hpp>
 
 #include <vector>
+#include <exception>
+#include <cstring>
+#include <cassert>
 
 #include "physics_server.h"
 #include "helper.h"
@@ -47,8 +50,6 @@ inline glm::vec3 Vec3tovec3(JPH::Vec3 vec) {
 	return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ());
 }
 
-void _framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
 class Engine
 {
 public:
@@ -57,8 +58,12 @@ public:
 	void Update(double deltaTime);
 	void add_game_object(GameObject* process_object);
 	void start();
-	template<typename T>
+	
+
+	template<class T> 
+	requires std::is_base_of_v<GameObject, T>
 	void set_root_game_object() {
+		assert(process_objects.empty() && "Can't set root game object when it's not the first added.");
 		add_game_object(new T);
 	}
 
