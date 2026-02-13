@@ -15,10 +15,10 @@ public:
 	RVec3 GetPosition() const;
 	Quat GetRotation() const;
 	BodyID GetID() const;
-	operator BodyID() const { return m_body_id; }
+	operator BodyID() const { return body_id_; }
 private:
-	PhysicsServer* m_physics_server;
-	BodyID m_body_id = BodyID(BodyID::cInvalidBodyID);
+	PhysicsServer* physics_server_;
+	BodyID body_id_ = BodyID(BodyID::cInvalidBodyID);
 };
 
 

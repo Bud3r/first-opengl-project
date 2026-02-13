@@ -10,14 +10,15 @@ class Texture
 public:
 	~Texture();
 
-	static Texture* Load(const char* p_file_path);
+	static Texture* Load(const char* file_path);
 	unsigned int GetId();
 	std::string type;
 	static Texture* FromMemory(unsigned char* start, int len);
 	static Texture* FromData(unsigned char* data, int width, int height, int channels_in_file);
 private:
-	Texture(const char* p_file_path);
-	unsigned int m_id;
+	Texture();
+	Texture(const char* file_path);
+	unsigned int id_;
 
-	std::string m_filePath;
+	std::string file_path;
 };

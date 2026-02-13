@@ -1,21 +1,6 @@
 #include "model.h"
 
 
-std::vector<Texture*> load_material_textures(aiMaterial* material, aiTextureType type, std::string type_name, const aiScene* scene) {
-	return {};
-
-	//std::vector<Texture> textures;
-	//for (uint32_t i = 0; i < material->GetTextureCount(type); i++)
-	//{
-	//	//material->
-	//	aiString str;
-	//	material->GetTexture(type, i, &str);
-	//	const aiTexture* texture = scene->GetEmbeddedTexture(str.C_Str());
-	//	Texture* t = Texture::FromMemory(reinterpret_cast<unsigned char*>(texture->pcData), texture->mWidth);
-	//}
-}
-
-
 Model::Model(const char* filePath)
 {
 	Assimp::Importer importer;
@@ -26,11 +11,11 @@ Model::Model(const char* filePath)
 		return;
 	}
 
-	parseNode(scene->mRootNode, scene);
+	ParseNode(scene->mRootNode, scene);
 }
 
 
-glm::mat4 Model::create_model_matrix(glm::vec3 p_position, glm::vec3 p_rotation) {
+glm::mat4 Model::GetModelMatrix(glm::vec3 p_position, glm::vec3 p_rotation) {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::rotate(model, p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
 	model = glm::rotate(model, p_rotation.y, glm::vec3(0.0, 1.0, 0.0));
@@ -41,31 +26,31 @@ glm::mat4 Model::create_model_matrix(glm::vec3 p_position, glm::vec3 p_rotation)
 
 
 void Model::Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4 p_modulate) {
-	program.use();
-	glUniform4fv(program.getLocation("modulate"), 1, glm::value_ptr(p_modulate));
-	glUniformMatrix4fv(program.getLocation("model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
-	for (auto mesh : meshes) {
-		mesh->Draw();
+	program.Use();
+	glUniform4fv(program.GetLocation("modulate"), 1, glm::value_ptr(p_modulate));
+	glUniformMatrix4fv(program.GetLocation("model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+	for (auto mesh : meshes_) {
+		mesh->Draw(program);
 	}
 }
 
-void Model::parseNode(aiNode* node, const aiScene* scene) {
+void Model::ParseNode(aiNode* node, const aiScene* scene) {
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		int meshIndex = node->mMeshes[i];
 		aiMesh* mesh = scene->mMeshes[meshIndex];
-		meshes.push_back(parseMesh(mesh, scene));
+		meshes_.push_back(ParseMesh(mesh, scene));
 	}
 
 	for (unsigned int i = 0; i < node->mNumChildren; i++) {
-		parseNode(node->mChildren[i], scene);
+		ParseNode(node->mChildren[i], scene);
 	}
 }
 
-Mesh* Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
+Mesh* Model::ParseMesh(aiMesh* mesh, const aiScene* scene) {
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
-	std::vector<Texture*> textures;
+	std::vector<std::shared_ptr<Texture>> textures;
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -75,7 +60,7 @@ Mesh* Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 		};
 
 		if (mesh->mTextureCoords[0]) {
-			vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+			vertex.tex_coords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 		}
 
 		vertices.push_back(vertex);
@@ -92,9 +77,27 @@ Mesh* Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 	
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		std::vector<Texture*> diffuse_maps = load_material_textures(material, aiTextureType_NORMALS, "normal", scene);
-		textures.insert(textures.end(), diffuse_maps.begin(), diffuse_maps.end());
+		std::vector<std::shared_ptr<Texture>> albedo_texture = LoadMaterialTextures(material, aiTextureType_BASE_COLOR, "albedo", scene);
+		textures = albedo_texture;
 	}
 
 	return new Mesh(vertices, indices, textures);
+}
+
+std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type, std::string type_name, const aiScene* scene) {
+	std::vector<std::shared_ptr<Texture>> textures;
+
+	for (uint32_t i = 0; i < material->GetTextureCount(type); i++)
+	{
+		//material->
+		aiString str;
+		material->GetTexture(type, i, &str);
+		const aiTexture* ai_texture = scene->GetEmbeddedTexture(str.C_Str());
+		Texture* tex_ptr = Texture::FromMemory(reinterpret_cast<unsigned char*>(ai_texture->pcData), ai_texture->mWidth);
+		tex_ptr->type = type;
+		std::shared_ptr<Texture> texture(tex_ptr);
+		textures.push_back(texture);
+	}
+
+	return textures;
 }

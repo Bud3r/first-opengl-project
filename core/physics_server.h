@@ -22,16 +22,16 @@
 using namespace JPH;
 using namespace JPH::literals;
 
-namespace Layers {
-    static constexpr ObjectLayer STATIC(0);
-    static constexpr ObjectLayer MOVING(1);
-    static constexpr ObjectLayer COUNT(2);
+namespace layers {
+    static constexpr ObjectLayer kStatic(0);
+    static constexpr ObjectLayer kMoving(1);
+    static constexpr ObjectLayer kCount(2);
 }
 
-namespace BroadPhaseLayers {
-    static constexpr BroadPhaseLayer STATIC(0);
-    static constexpr BroadPhaseLayer MOVING(1);
-    static constexpr int COUNT(2);
+namespace broad_phase_layers {
+    static constexpr BroadPhaseLayer kStatic(0);
+    static constexpr BroadPhaseLayer kMoving(1);
+    static constexpr int kCount(2);
 }
 
 void SetupJolt();
@@ -42,13 +42,13 @@ class MyBroadPhaseLayerInterface final : public BroadPhaseLayerInterface
 public:
     MyBroadPhaseLayerInterface()
     {
-        mObjectToBroadPhase[Layers::STATIC] = BroadPhaseLayers::STATIC;
-        mObjectToBroadPhase[Layers::MOVING] = BroadPhaseLayers::MOVING;
+        mObjectToBroadPhase[layers::kStatic] = broad_phase_layers::kStatic;
+        mObjectToBroadPhase[layers::kMoving] = broad_phase_layers::kMoving;
     };
 private:
     virtual uint GetNumBroadPhaseLayers() const override
     {
-        return BroadPhaseLayers::COUNT;
+        return broad_phase_layers::kCount;
     }
 
     virtual BroadPhaseLayer GetBroadPhaseLayer(ObjectLayer inLayer) const override
@@ -56,7 +56,7 @@ private:
         return mObjectToBroadPhase[inLayer];
     }
 private:
-    BroadPhaseLayer	mObjectToBroadPhase[BroadPhaseLayers::COUNT];
+    BroadPhaseLayer	mObjectToBroadPhase[broad_phase_layers::kCount];
 };
 
 class PhysicsServer

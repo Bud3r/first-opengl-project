@@ -18,15 +18,16 @@
 class Model
 {
 public:
-	Model(const char* filePath);
 	Model() { };
+	Model(const char* file_path);
 	Model(Mesh* mesh) {
-		meshes.push_back(mesh);
+		meshes_.push_back(mesh);
 	}
-	void Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4 p_modulate = glm::vec4(1.0));
-	glm::mat4 static create_model_matrix(glm::vec3 p_position, glm::vec3 p_rotation);
-	std::vector<Mesh*> meshes;
+	void Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4 modulate = glm::vec4(1.0));
+	glm::mat4 static GetModelMatrix(glm::vec3 position, glm::vec3 rotation);
 private:
-	void parseNode(aiNode* node, const aiScene* scene);
-	Mesh* parseMesh(aiMesh* mesh, const aiScene* scene);
+	void ParseNode(aiNode* node, const aiScene* scene);
+	Mesh* ParseMesh(aiMesh* mesh, const aiScene* scene);
+	std::vector<std::shared_ptr<Texture>> LoadMaterialTextures(aiMaterial* material, aiTextureType type, std::string type_name, const aiScene* scene);
+	std::vector<Mesh*> meshes_;
 };

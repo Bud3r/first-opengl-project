@@ -10,7 +10,7 @@ class PlayerGameObject : public GameObject
 public:
 	virtual void AddedToEngine() override;
 	virtual void Process(double delta_time) override;
-	virtual void process_input(InputEvent& input_event) override;
+	virtual void ProcessInput(InputEvent& input_event) override;
 private:
 	bool noclip = false;
 	JPH::Vec3 up = JPH::Vec3(0.0f, 1.0f, 0.0f);

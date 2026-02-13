@@ -13,7 +13,7 @@ void PhysicsModelGameObject::Process(double deltaTime)
 
     m_model->Draw(
         engine->GetDefaultShaderProgram(), 
-        Model::create_model_matrix(
+        Model::GetModelMatrix(
             glm::vec3(position.GetX(), position.GetY(), position.GetZ()),
             glm::vec3(rotation.GetX(), rotation.GetY(), rotation.GetZ())),
         modulate

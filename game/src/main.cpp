@@ -8,8 +8,8 @@
 int main()
 {
     Engine engine;
-    engine.set_root_game_object<MainGameObject>();
-    engine.start();
+    engine.SetRootGameObject<MainGameObject>();
+    engine.Start();
     return 0;
 }
 

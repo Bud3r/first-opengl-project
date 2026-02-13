@@ -25,10 +25,10 @@
 #include "resource_loader.h"
 #include "input_manager.h"
 
-constexpr int UBO_BINDING = 0;
-constexpr int INIT_WINDOW_WIDTH = 800;
-constexpr int INIT_WINDOW_HEIGHT = 600;
-constexpr int ERR_LOG_SIZE = 512;
+constexpr int kUboBinding = 0;
+constexpr int kInitWindowWidth = 800;
+constexpr int kInitWindowHeight = 600;
+constexpr int kShaderErrLogSise = 512;
 
 inline void print_vec(glm::vec4 vec) {
 	std::printf("(%f, %f, %f, %f)\n", vec.x, vec.y, vec.z, vec.w);
@@ -55,16 +55,25 @@ class Engine
 public:
 	Engine();
 	~Engine();
-	void Update(double deltaTime);
-	void add_game_object(GameObject* process_object);
-	void start();
-	
-
+	void Update(double delta);
+	/// <summary>
+	/// Will set the engine pointer and call the objects AddedToEngine();
+	/// </summary>
+	/// <param name="game_object"></param>
+	void AddGameObject(GameObject* game_object);
+	/// <summary>
+	/// This starts the game loop.
+	/// </summary>
+	void Start();
+	/// <summary>
+	/// Call once before you call start to add the first game object.
+	/// </summary>
+	/// <typeparam name="T">Type of the GameObject</typeparam>
 	template<class T> 
 	requires std::is_base_of_v<GameObject, T>
-	void set_root_game_object() {
+	void SetRootGameObject() {
 		assert(process_objects.empty() && "Can't set root game object when it's not the first added.");
-		add_game_object(new T);
+		AddGameObject(new T);
 	}
 
 	PhysicsServer physics_server;
@@ -73,19 +82,18 @@ public:
 	Camera* current_camera = nullptr;
 	std::vector<GameObject*> process_objects;
 
-	glm::vec2 movementInput;
-	glm::dvec2 mouseMovement;
-	glm::dvec2 mousePos;
+	glm::dvec2 mouse_movement;
+	glm::dvec2 mouse_pos;
 
 	const ShaderProgram& GetDefaultShaderProgram() const;
 private:
 	GLFWwindow* CreateWindow();
 
-	ShaderProgram default_shader_program;
+	ShaderProgram default_shader_program_;
 
-	GLFWwindow* m_window;
-	glm::dvec2 lastMousePos;
+	GLFWwindow* window_;
+	glm::dvec2 last_mouse_pos_;
 
-	unsigned int UBO;
-	double oldTime;
+	unsigned int ubo_;
+	double old_time_;
 };

@@ -33,36 +33,42 @@ Mesh* _create_square_mesh(glm::vec3 e) {
 
 
 void MainGameObject::AddedToEngine() {
-    get_engine().physics_server.m_physics_system.SetGravity(Vec3Arg(0.0, -0.1, 0.0));
+    GetEngine().physics_server.m_physics_system.SetGravity(Vec3Arg(0.0, -0.1, 0.0));
 
     auto ak_body_settings = BodyCreationSettings(
         new BoxShape(Vec3Arg(1.0f, 1.0f, 1.0f)),
         RVec3Arg(0.0_r, 0.5_r, 0.0_r),
         QuatArg::sIdentity(),
         EMotionType::Dynamic,
-        Layers::MOVING);
+        layers::kMoving);
 
     auto floor_body_settings = BodyCreationSettings(
         new BoxShape(Vec3Arg(12.0f, 0.1f, 12.0f)),
         RVec3Arg(0.0_r, -1.0_r, 0.0_r),
         QuatArg::sIdentity(),
         EMotionType::Static,
-        Layers::STATIC
+        layers::kStatic
         );
 
-    std::shared_ptr<Model> ak_model = get_engine().resource_loader.load<Model>("ak47.glb");
+    std::shared_ptr<Model> ak_model = GetEngine().resource_loader.Load<Model>("ak47.glb");
 
     Mesh* floor_mesh = _create_square_mesh(glm::vec3(8.0f, 0.1f, 8.0f));
     Model* floor_model = new Model(floor_mesh);
     floor_game_object = new PhysicsModelGameObject(floor_model, &floor_body_settings);
-    get_engine().add_game_object(floor_game_object);
+    GetEngine().AddGameObject(floor_game_object);
     floor_game_object->modulate = glm::vec4(0.5, 0.5, 0.5, 1.0);
 
     ak_game_object = new PhysicsModelGameObject(ak_model.get(), &ak_body_settings);
-    get_engine().add_game_object(ak_game_object);
+    GetEngine().AddGameObject(ak_game_object);
     //ak_game_object->GetBody().SetLinearVelocity(Vec3Arg(0.0f, -1.0f, 0.0f));
 
     player_game_object = new PlayerGameObject();
-    get_engine().add_game_object(player_game_object);
+    GetEngine().AddGameObject(player_game_object);
+
+    model = GetEngine().resource_loader.Load<Model>("ak47.glb");
+}
+
+void MainGameObject::Process(double delta) {
+    model->Draw(GetEngine().GetDefaultShaderProgram(), glm::mat4(1.0f));
 }
 

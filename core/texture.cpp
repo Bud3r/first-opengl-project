@@ -2,76 +2,59 @@
 
 #include "stb_image.h"
 
-Texture* Texture::Load(const char* filePath) {
-	Texture* texture = new Texture(filePath);
-	return texture;
-}
 
-Texture::~Texture()
-{
-	glDeleteTextures(1, &m_id);
-}
 
-Texture::Texture(const char* p_filePath)
-{
-	m_filePath = p_filePath;
-	glGenTextures(1, &m_id);
-	glBindTexture(GL_TEXTURE_2D, m_id);
+Texture::Texture() {
+	glGenTextures(1, &id_);
+	glBindTexture(GL_TEXTURE_2D, id_);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
 
+Texture::~Texture() {
+	glDeleteTextures(1, &id_);
+}
+
+Texture* Texture::Load(const char* file_path) {
 	int width, height, channels_in_file;
-	stbi_uc* data = stbi_load(p_filePath, &width, &height, &channels_in_file, 0);
+	stbi_set_flip_vertically_on_load(false);
+	stbi_uc* data = stbi_load(file_path, &width, &height, &channels_in_file, 0);
 
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(data);
-	}
-	else {
-		std::cout << "Failed to load texture: " << p_filePath << std::endl;
-	}
+	Texture* texture = Texture::FromData(data, width, height, channels_in_file);
+
+	texture->file_path = file_path;
+
+	return texture;
 }
 
 Texture* Texture::FromMemory(stbi_uc* start, int len) {
 	int width, height, channels_in_file;
+	stbi_set_flip_vertically_on_load(false);
 	stbi_uc* data = stbi_load_from_memory(start, len, &width, &height, &channels_in_file, 0);
+
 	return Texture::FromData(data, width, height, channels_in_file);
 }
 
 Texture* Texture::FromData(stbi_uc* data, int width, int height, int channels_in_file) {
-	if (data != nullptr) {
-		GLenum texture_type;
-		switch (channels_in_file)
-		{
-			case 1:
-				texture_type = GL_R8;
-				break;
-			case 2:
-				texture_type = GL_RG8;
-				break;
-			case 3:
-				texture_type = GL_RGB8;
-				break;
-			case 4:
-				texture_type = GL_RGBA8;
-				break;
-			default:
-				break;
-		}
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, texture_type, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(data);
-	}
-	else {
+	if (data == nullptr) {
 		std::cerr << stbi_failure_reason() << std::endl;
-		throw std::invalid_argument("Argument data pointer is nullptr.");
+		throw std::invalid_argument("Data pointer is nullptr.");
 	}
+
+	GLenum texture_types[4] = { GL_R, GL_RG, GL_RGB, GL_RGBA };
+	GLenum texture_type = texture_types[channels_in_file];
+
+	Texture* texture = new Texture();
+
+	glTexImage2D(GL_TEXTURE_2D, 0, texture_type, width, height, 0, texture_type, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+	return texture;
 }
 
 unsigned int Texture::GetId() {
-	return m_id;
+	return id_;
 }

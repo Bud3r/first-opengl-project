@@ -147,7 +147,7 @@ void _key_callback(GLFWwindow* window, int key, int scancode, int action, int mo
 	};
 
 	for (auto func : input_callback_game_objects) {
-		func->process_input(event);
+		func->ProcessInput(event);
 	}
 
 	m_key_pressed[key] = pressed;

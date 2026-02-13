@@ -6,7 +6,7 @@ ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath) {
 
 void ShaderProgram::Load(const char* vertexPath, const char* fragmentPath) {
 	int success;
-	char infoLog[InfoLogSize];
+	char infoLog[kInfoLogSize];
 
 	auto compileShader = [success, infoLog](const char* shaderPath, GLenum shaderType) mutable -> int {
 		std::string shaderCode;
@@ -33,7 +33,7 @@ void ShaderProgram::Load(const char* vertexPath, const char* fragmentPath) {
 		glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
 
 		if (!success) {
-			glGetShaderInfoLog(shaderId, InfoLogSize, NULL, infoLog);
+			glGetShaderInfoLog(shaderId, kInfoLogSize, NULL, infoLog);
 			std::cout << "SHADER:COMP:FAILED | " << shaderPath << std::endl << infoLog << std::endl;
 		}
 
@@ -44,16 +44,16 @@ void ShaderProgram::Load(const char* vertexPath, const char* fragmentPath) {
 	uint32_t fragmentId = compileShader(fragmentPath, GL_FRAGMENT_SHADER);
 
 
-	ID = glCreateProgram();
-	glAttachShader(ID, vertexId);
-	glAttachShader(ID, fragmentId);
-	glLinkProgram(ID);
+	id_ = glCreateProgram();
+	glAttachShader(id_, vertexId);
+	glAttachShader(id_, fragmentId);
+	glLinkProgram(id_);
 
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
+	glGetProgramiv(id_, GL_LINK_STATUS, &success);
 
 
 	if (!success) {
-		glGetProgramInfoLog(ID, InfoLogSize, 0, infoLog);
+		glGetProgramInfoLog(id_, kInfoLogSize, 0, infoLog);
 		std::cout << "Program linking failed\n" << infoLog << std::endl;
 	}
 
@@ -62,29 +62,29 @@ void ShaderProgram::Load(const char* vertexPath, const char* fragmentPath) {
 }
 
 ShaderProgram::~ShaderProgram() {
-	glDeleteProgram(ID);
+	glDeleteProgram(id_);
 }
 
-GLint ShaderProgram::getLocation(const char* uniform) const {
-	return glGetUniformLocation(ID, uniform);
+GLint ShaderProgram::GetLocation(const char* uniform) const {
+	return glGetUniformLocation(id_, uniform);
 }
 
-void ShaderProgram::use() const {
-	glUseProgram(ID);
+void ShaderProgram::Use() const {
+	glUseProgram(id_);
 }
 
-int ShaderProgram::getId() const {
-	return ID;
+int ShaderProgram::GetId() const {
+	return id_;
 }
 
-void ShaderProgram::setBool(const std::string& name, bool value) const {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), static_cast<int>(value));
+void ShaderProgram::SetBool(const std::string& name, bool value) const {
+	glUniform1i(glGetUniformLocation(id_, name.c_str()), static_cast<int>(value));
 }
 
-void ShaderProgram::setInt(const std::string& name, int value) const {
-	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+void ShaderProgram::SetInt(const std::string& name, int value) const {
+	glUniform1i(glGetUniformLocation(id_, name.c_str()), value);
 }
 
-void ShaderProgram::setFloat(const std::string& name, float value) const {
-	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+void ShaderProgram::SetFloat(const std::string& name, float value) const {
+	glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
 }
