@@ -1,17 +1,19 @@
 #include "resource_loader.h"
 
 
-void* _load_texture(std::string path) {
-	return Texture::Load(path.c_str());
-}
+namespace {
+	void* LoadTexture(std::string path) {
+		return Texture::Load(path.c_str());
+	}
 
-void* LoadModel(std::string path) {
-	return new Model(path.c_str());
-}
+	void* LoadModel(std::string path) {
+		return new Model(path.c_str());
+	}
+} // namespace
 
 ResourceLoader::ResourceLoader()
 {
-	AddLoaderFunc(".png", _load_texture);
+	AddLoaderFunc(".png", LoadTexture);
 	AddLoaderFunc(".glb", LoadModel);
 }
 

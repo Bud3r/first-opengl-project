@@ -22,12 +22,6 @@ private:
 	std::map<std::string, std::weak_ptr<void>> file_path_to_resource_;
 };
 
-namespace {
-void* LoadTexture(std::string path);
-void* LoadModel(std::string path);
-} // namespace
-
-
 template<typename T>
 std::shared_ptr<T> ResourceLoader::Load(std::string p_file_path) {
 	std::string real_path = get_real_file_path(p_file_path);
