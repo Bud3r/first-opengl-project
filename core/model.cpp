@@ -1,12 +1,28 @@
 #include "model.h"
 
+
+std::vector<Texture*> load_material_textures(aiMaterial* material, aiTextureType type, std::string type_name, const aiScene* scene) {
+	return {};
+
+	//std::vector<Texture> textures;
+	//for (uint32_t i = 0; i < material->GetTextureCount(type); i++)
+	//{
+	//	//material->
+	//	aiString str;
+	//	material->GetTexture(type, i, &str);
+	//	const aiTexture* texture = scene->GetEmbeddedTexture(str.C_Str());
+	//	Texture* t = Texture::FromMemory(reinterpret_cast<unsigned char*>(texture->pcData), texture->mWidth);
+	//}
+}
+
+
 Model::Model(const char* filePath)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		std::printf(importer.GetErrorString());
+		std::cerr << importer.GetErrorString() << std::endl;
 		return;
 	}
 
@@ -72,6 +88,12 @@ Mesh* Model::parseMesh(aiMesh* mesh, const aiScene* scene) {
 		{
 			indices.push_back(face.mIndices[j]);
 		}
+	}
+	
+	if (mesh->mMaterialIndex >= 0) {
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		std::vector<Texture*> diffuse_maps = load_material_textures(material, aiTextureType_NORMALS, "normal", scene);
+		textures.insert(textures.end(), diffuse_maps.begin(), diffuse_maps.end());
 	}
 
 	return new Mesh(vertices, indices, textures);

@@ -1,5 +1,8 @@
 #include "engine.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
@@ -9,6 +12,7 @@ bool _show_demo_window = true;
 
 Engine::Engine() {
 	glfwInit();
+	stbi_set_flip_vertically_on_load(true);
 
 	m_window = CreateWindow();
 	default_shader_program.Load(get_real_file_path("shaders/shader.vert").c_str(), get_real_file_path("shaders/shader.frag").c_str());
@@ -67,6 +71,7 @@ void Engine::Update(double deltaTime)
 	double sensitivity = 0.0035;
 	mouseMovement = (mousePos - lastMousePos) * sensitivity;
 	lastMousePos = mousePos;
+
 
 	if (deltaTime > 0.0) {
 		glfwSetWindowTitle(m_window, (std::string("FPS: ") + std::to_string(static_cast<int>(1.0 / deltaTime))).c_str());

@@ -10,6 +10,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "resource_loader.h"
+#include "texture.h"
 #include "shader_program.h"
 #include "mesh.h"
 

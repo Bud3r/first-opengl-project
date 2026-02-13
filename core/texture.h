@@ -4,6 +4,7 @@
 #include <vector>
 #include "glad/glad.h"
 
+
 class Texture
 {
 public:
@@ -11,11 +12,11 @@ public:
 
 	static Texture* Load(const char* p_file_path);
 	unsigned int GetId();
-	
 	std::string type;
+	static Texture* FromMemory(unsigned char* start, int len);
+	static Texture* FromData(unsigned char* data, int width, int height, int channels_in_file);
 private:
 	Texture(const char* p_file_path);
-
 	unsigned int m_id;
 
 	std::string m_filePath;

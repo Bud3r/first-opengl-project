@@ -50,7 +50,7 @@ void MainGameObject::AddedToEngine() {
         Layers::STATIC
         );
 
-    Model* ak_model = get_engine().resource_loader.load<Model>("ak47.glb");
+    std::shared_ptr<Model> ak_model = get_engine().resource_loader.load<Model>("ak47.glb");
 
     Mesh* floor_mesh = _create_square_mesh(glm::vec3(8.0f, 0.1f, 8.0f));
     Model* floor_model = new Model(floor_mesh);
@@ -58,7 +58,7 @@ void MainGameObject::AddedToEngine() {
     get_engine().add_game_object(floor_game_object);
     floor_game_object->modulate = glm::vec4(0.5, 0.5, 0.5, 1.0);
 
-    ak_game_object = new PhysicsModelGameObject(ak_model, &ak_body_settings);
+    ak_game_object = new PhysicsModelGameObject(ak_model.get(), &ak_body_settings);
     get_engine().add_game_object(ak_game_object);
     //ak_game_object->GetBody().SetLinearVelocity(Vec3Arg(0.0f, -1.0f, 0.0f));
 
