@@ -35,8 +35,6 @@ void Mesh::Draw(const ShaderProgram& program) {
 		glBindTexture(GL_TEXTURE_2D, texture->GetId());
 	}
 
-	
-
 	glBindVertexArray(vao_);
 	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices_.size()), GL_UNSIGNED_INT, 0);
 }
