@@ -84,12 +84,14 @@ Mesh* Model::ParseMesh(aiMesh* mesh, const aiScene* scene) {
 	return new Mesh(vertices, indices, textures);
 }
 
-std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(aiMaterial* material, aiTextureType type, std::string type_name, const aiScene* scene) {
+std::vector<std::shared_ptr<Texture>> Model::LoadMaterialTextures(
+	aiMaterial* material, aiTextureType type, 
+	std::string type_name, const aiScene* scene) {
+
 	std::vector<std::shared_ptr<Texture>> textures;
 
 	for (uint32_t i = 0; i < material->GetTextureCount(type); i++)
 	{
-		//material->
 		aiString str;
 		material->GetTexture(type, i, &str);
 		const aiTexture* ai_texture = scene->GetEmbeddedTexture(str.C_Str());

@@ -75,6 +75,9 @@ public:
 		assert(process_objects.empty() && "Can't set root game object when it's not the first added.");
 		AddGameObject(new T);
 	}
+	void Close() {
+		glfwSetWindowShouldClose(window_, true);
+	}
 
 	PhysicsServer physics_server;
 	ResourceLoader resource_loader;
@@ -90,6 +93,7 @@ private:
 	GLFWwindow* CreateWindow();
 
 	ShaderProgram default_shader_program_;
+	std::shared_ptr<Texture> default_texture_;
 
 	GLFWwindow* window_;
 	glm::dvec2 last_mouse_pos_;

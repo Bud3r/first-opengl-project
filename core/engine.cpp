@@ -1,16 +1,36 @@
-#include "engine.h"
+#include <array>
+#include <algorithm>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "engine.h"
+
+// TODO: Finish window class.
+// TODO: Handle file access in release version.
+// TODO: Make a game.
+
 namespace {
-	void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-		glViewport(0, 0, width, height);
-	}
-
+	constexpr int kMaxNumEngineInstance = 16;
+	int width_ = kInitWindowWidth;
+	int height_ = kInitWindowHeight;
+	std::array<GLFWwindow*, kMaxNumEngineInstance> windows_;
+	std::array<Engine*, kMaxNumEngineInstance> engines_;
 	bool _show_demo_window = true;
-} // namespace
 
+	void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+		for (int i = 0; i < kMaxNumEngineInstance; i++) {
+			if (windows_[i] == window) {
+
+				break;
+			}
+		}
+
+		glViewport(0, 0, width, height);
+		width_ = width;
+		height_ = height;
+	}
+} // namespace
 
 
 Engine::Engine() {
@@ -18,11 +38,37 @@ Engine::Engine() {
 	stbi_set_flip_vertically_on_load(true);
 
 	window_ = CreateWindow();
+
+	{
+		bool added = false;
+		for (int i = 0; i < kMaxNumEngineInstance; i++)
+		{
+			if (engines_[i] == nullptr) {
+				engines_[i] = this;
+				windows_[i] = window_;
+				added = true;
+				break;
+			}
+		}
+		if (!added) {
+			throw std::length_error("Max amount of engines is 16, added one to much.");
+		}
+	}
+	
+
 	default_shader_program_.Load(get_real_file_path("shaders/shader.vert").c_str(), 
 		get_real_file_path("shaders/shader.frag").c_str());
 
-	glfwGetCursorPos(window_, &last_mouse_pos_.x, &last_mouse_pos_.y);
+	unsigned char default_texture_data[3 * 4] = {
+		255, 0, 255,
+		0, 0, 0,
+		255, 0, 255,
+		0, 0, 0
+	};
 
+	default_texture_ = std::shared_ptr<Texture>(Texture::FromData(default_texture_data, 2, 2, 3));
+
+	glfwGetCursorPos(window_, &last_mouse_pos_.x, &last_mouse_pos_.y);
 	glGenBuffers(1, &ubo_);
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo_);
 	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
@@ -52,6 +98,15 @@ Engine::Engine() {
 }
 
 Engine::~Engine() {
+	for (int i = 0; i < kMaxNumEngineInstance; i++)
+	{
+		if (engines_[i] == this) {
+			engines_[i] = nullptr;
+			windows_[i] = nullptr;
+			break;
+		}
+	}
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -89,8 +144,7 @@ void Engine::Update(double deltaTime)
 
 		glm::mat4 view = current_camera->GetViewMatrix();
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view));
-
-		glm::mat4 projection = current_camera->GetProjectionMatrix(static_cast<float>(kInitWindowWidth) / static_cast<float>(kInitWindowHeight));
+		glm::mat4 projection = current_camera->GetProjectionMatrix(static_cast<float>(width_) / static_cast<float>(height_));
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
 
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -101,7 +155,10 @@ void Engine::Update(double deltaTime)
 		_show_demo_window = false;
 	}
 
+
 	for (auto obj : process_objects) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, default_texture_->GetId());
 		obj->Process(deltaTime);
 	}
 
@@ -125,7 +182,7 @@ void Engine::AddGameObject(GameObject* process_object) {
 void Engine::Start() {
 	double lastFrameTime = 0.0;
 
-	while (true)
+	while (!glfwWindowShouldClose(window_))
 	{
 		double frameTime = glfwGetTime();
 		double delta = frameTime - lastFrameTime;

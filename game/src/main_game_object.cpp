@@ -1,14 +1,15 @@
 #include "main_game_object.h"
 
+namespace {
 Mesh* _create_square_mesh(glm::vec3 e) {
 
     std::vector<Vertex> vertices = {};
     std::vector<uint32_t> indicices = {
-        1, 2, 3, 
-        2, 3, 4, 
-        2, 3, 6, 
-        2, 6, 7, 
-        1, 2, 7, 
+        1, 2, 3,
+        2, 3, 4,
+        2, 3, 6,
+        2, 6, 7,
+        1, 2, 7,
         1, 2, 8,
         1, 4, 5,
         5, 8, 1,
@@ -30,11 +31,10 @@ Mesh* _create_square_mesh(glm::vec3 e) {
     Mesh* floor_mesh = new Mesh(vertices, indicices, {});
     return floor_mesh;
 }
+} // namespace
 
 
 void MainGameObject::AddedToEngine() {
-    GetEngine().physics_server.m_physics_system.SetGravity(Vec3Arg(0.0, -0.1, 0.0));
-
     auto ak_body_settings = BodyCreationSettings(
         new BoxShape(Vec3Arg(1.0f, 1.0f, 1.0f)),
         RVec3Arg(0.0_r, 0.5_r, 0.0_r),
@@ -65,7 +65,7 @@ void MainGameObject::AddedToEngine() {
     player_game_object = new PlayerGameObject();
     GetEngine().AddGameObject(player_game_object);
 
-    model = GetEngine().resource_loader.Load<Model>("ak47.glb");
+    model = ak_model;
 }
 
 void MainGameObject::Process(double delta) {

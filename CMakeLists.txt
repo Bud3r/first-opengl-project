@@ -19,7 +19,7 @@ find_package(imgui CONFIG REQUIRED)
 add_library(
 	BudderEngine-Core
 	STATIC
-	"core/helper.h"
+	"core/helper.h" "core/helper.cpp"
 	"core/camera.cpp" "core/camera.h"
 	"core/engine.cpp" "core/engine.h"
 	"core/game_object.cpp" "core/game_object.h"
@@ -31,7 +31,8 @@ add_library(
 	"core/resource_loader.cpp" "core/resource_loader.h"
 	"core/shader_program.cpp" "core/shader_program.h"
 	"core/texture.cpp" "core/texture.h"
- "core/helper.cpp")
+	"core/window.cpp" "core/window.h"
+)
 
 target_include_directories(BudderEngine-Core PUBLIC "core/include")
 

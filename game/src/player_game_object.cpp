@@ -102,4 +102,14 @@ void PlayerGameObject::ProcessInput(InputEvent& input_event) {
         PhysicsModelGameObject* object = new PhysicsModelGameObject(GetEngine().resource_loader.Load<Model>("ball/ball.glb").get(), &body_creation_setting);
         GetEngine().AddGameObject(object);
     }
+    if (input_event.m_type == InputEventType::KEYBOARD
+        && input_event.m_key_label == GLFW_KEY_UP
+        && (input_event.m_press_flags == PressFlags::JUST_PRESSED)) {
+        camera.fov -= 0.1f;
+    }
+    if (input_event.m_type == InputEventType::KEYBOARD
+        && input_event.m_key_label == GLFW_KEY_DOWN
+        && (input_event.m_press_flags == PressFlags::JUST_PRESSED)) {
+        camera.fov += 0.1f;
+    }
 }

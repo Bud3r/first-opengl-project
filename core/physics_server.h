@@ -18,7 +18,7 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Body/BodyActivationListener.h>
 
-
+// REMOVE THESE.
 using namespace JPH;
 using namespace JPH::literals;
 
@@ -59,6 +59,7 @@ private:
     BroadPhaseLayer	mObjectToBroadPhase[broad_phase_layers::kCount];
 };
 
+// Clean up variable names an code.
 class PhysicsServer
 {
 public:

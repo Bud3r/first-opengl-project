@@ -17,5 +17,6 @@ in vec4 verPos;
 
 void main() 
 {
-	FragColor = texture(texture_albedo, UV) * modulate;
+	FragColor = modulate;
+	FragColor *= texture(texture_albedo, UV);
 }

@@ -1,6 +1,5 @@
 #include "resource_loader.h"
 
-
 namespace {
 	void* LoadTexture(std::string path) {
 		return Texture::Load(path.c_str());

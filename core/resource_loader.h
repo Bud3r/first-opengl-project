@@ -41,7 +41,7 @@ std::shared_ptr<T> ResourceLoader::Load(std::string p_file_path) {
 		}
 	}
 	
-	int i = real_path.find_last_of(".");
+	size_t i = real_path.find_last_of(".");
 
 	if (i == std::string::npos) {
 		throw std::logic_error(real_path + " has no file extension");

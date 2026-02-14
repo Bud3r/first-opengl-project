@@ -30,11 +30,13 @@ Mesh::Mesh(std::vector<Vertex> p_vertices, std::vector<uint32_t> p_indices, std:
 }
 
 void Mesh::Draw(const ShaderProgram& program) {
-	//for (std::shared_ptr<Texture> texture : textures)
-	//{
-	//	glUniform1i(glGetUniformLocation(program.GetId(), "texture_albedo"), texture->GetId());
-	//}
+	for (std::shared_ptr<Texture> texture : textures_) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture->GetId());
+	}
+
+	
 
 	glBindVertexArray(vao_);
-	glDrawElements(GL_TRIANGLES, indices_.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices_.size()), GL_UNSIGNED_INT, 0);
 }
