@@ -43,6 +43,7 @@ Texture* Texture::FromData(unsigned char* data, int width, int height, int chann
 		std::cerr << stbi_failure_reason() << std::endl;
 		throw std::invalid_argument("Data pointer is nullptr.");
 	}
+
 	constexpr std::array<GLenum, 4> kTextureTypes = { GL_R, GL_RG, GL_RGB, GL_RGBA };
 	GLenum texture_type = kTextureTypes[channels_in_file - 1];
 

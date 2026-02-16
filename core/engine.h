@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <exception>
+#include <cstring>
+#include <cassert>
+
 #include <fmt/core.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -10,11 +16,7 @@
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
 
-#include <vector>
-#include <exception>
-#include <cstring>
-#include <cassert>
-
+#include "window.h"
 #include "physics_server.h"
 #include "helper.h"
 #include "shader_program.h"
@@ -69,6 +71,14 @@ public:
 	/// Call once before you call start to add the first game object.
 	/// </summary>
 	/// <typeparam name="T">Type of the GameObject</typeparam>
+	Window& GetWindow() {
+		return *window_;
+	}
+
+	InputManager& GetInputManager() {
+		return window_->input_manager;
+	}
+
 	template<class T> 
 	requires std::is_base_of_v<GameObject, T>
 	void SetRootGameObject() {
@@ -76,7 +86,7 @@ public:
 		AddGameObject(new T);
 	}
 	void Close() {
-		glfwSetWindowShouldClose(window_, true);
+		glfwSetWindowShouldClose(window_->GetGlfwWindow(), true);
 	}
 
 	PhysicsServer physics_server;
@@ -95,7 +105,7 @@ private:
 	ShaderProgram default_shader_program_;
 	std::shared_ptr<Texture> default_texture_;
 
-	GLFWwindow* window_;
+	Window* window_;
 	glm::dvec2 last_mouse_pos_;
 
 	unsigned int ubo_;

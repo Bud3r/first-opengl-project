@@ -15,8 +15,8 @@ inline JPH::Vec3 euler_to_forward(glm::vec3 euler) {
 
 
 void PlayerGameObject::AddedToEngine() {
-    Input_add_action("move", InputEventType::KEYBOARD, { GLFW_KEY_D, GLFW_KEY_A, GLFW_KEY_W, GLFW_KEY_S });
-    Input_add_callback(this);
+    GetEngine().GetInputManager().AddAction("move", InputEventType::KEYBOARD, { GLFW_KEY_D, GLFW_KEY_A, GLFW_KEY_W, GLFW_KEY_S });
+    GetEngine().GetInputManager().AddCallback(this);
     GetEngine().current_camera = &camera;
 	body.Init(&GetEngine().physics_server, BodyCreationSettings(
         new CapsuleShape(1.0f, 0.5f),
@@ -33,7 +33,7 @@ void PlayerGameObject::Process(double delta_time) {
     camera.rotation = camera_rotation;
     camera.position = RVec3tovec3(body.GetPosition());
 
-    glm::vec2 movement_input = Input_get_action_2d("move", InputEventType::KEYBOARD);
+    glm::vec2 movement_input = GetEngine().GetInputManager().GetAction2d("move", InputEventType::KEYBOARD);
 
     float move_speed = 4.0f;
 
