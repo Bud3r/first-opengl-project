@@ -1,15 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <array>
 #include <vector>
-#include "glad/glad.h"
-
 
 class Texture
 {
 public:
 	unsigned int GetId();
-	static Texture* Load(const char* file_path);
+	static Texture* FromFile(const char* file_path);
 	static Texture* FromMemory(unsigned char* start, int len);
 	static Texture* FromData(unsigned char* data, int width, int height, int channels_in_file);
 

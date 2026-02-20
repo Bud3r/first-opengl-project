@@ -22,29 +22,29 @@ enum class MouseMode {
 };
 
 enum class InputEventType {
-	KEYBOARD,
-	MOUSE_BUTTON,
-	MOUSE_MOTION,
-	JOY_STICK,
-	JOY_BUTTON,
-	NONE,
+	kNone,
+	kKeyboard,
+	kMouseButton,
+	kMouseMotion,
+	kJoyMotion,
+	kJoyButton,
 };
 
 enum class AxisMode {
-	BINARY,
-	AXIS_1D,
-	AXIS_2D,
-	AXIS_3D,
+	kBinary,
+	kAxis1d,
+	kAxis2d,
+	kAxis3d,
 };
 
 enum class PressFlags {
-	NONE = 0,
-	PRESSED = 1,
-	RELEASED = 2,
-	REPEAT = 4,
-	JUST = 8,
-	JUST_PRESSED = 1 | 8,
-	JUST_RELEASED = 2 | 8,
+	kNone = 0,
+	kPressed = 1,
+	kReleased = 2,
+	kRepeat = 4,
+	kJust = 8,
+	kJustPressed = 1 | 8,
+	kJustReleased = 2 | 8,
 };
 
 inline PressFlags operator|(PressFlags a, PressFlags b)  {
@@ -56,20 +56,23 @@ inline PressFlags operator&(PressFlags a, PressFlags b) {
 }
 
 struct InputEvent {
-	InputEventType m_type = InputEventType::NONE;
-	PressFlags m_press_flags;
-	int m_key_label;
-	float strength;
-
-	inline bool Equal(const InputEvent& p_other) {
-		return false;
-	}
+	InputEventType type = InputEventType::kNone;
+	PressFlags press_flags;
+	union {
+		int key;
+		int button;
+		float mouse_movement_x;
+	};
+	union {
+		int key_label;
+		float strength;
+		float mouse_movement_y;
+	};
 };
 
 struct Action {
-	static constexpr int ACTION_MAX = 6;
+	static constexpr int kActionSizeMax = 6;
 	std::map<InputEventType, std::vector<int>> keys;
-	AxisMode m_axis;
 };
 
 class InputManager {
@@ -96,11 +99,22 @@ public:
 		return last_mouse_pos_;
 	}
 
-	GLFWwindow* glfw_window;
+	void SetGlfwWindow(GLFWwindow* window) {
+		glfw_window_ = window;
+		double cursor_x;
+		double cursor_y;
+		glfwGetCursorPos(window, &cursor_x, &cursor_y);
+		last_mouse_pos_ = glm::vec2(cursor_x, cursor_y);
+	}
+
 private:
+	void PropagateInputEvent(InputEvent& event);
+	PressFlags GetPressType(int action, bool was_pressed);
+
 	std::map<std::string, Action> actions_;
 	std::list<GameObject*> input_callback_game_objects_;
 	std::array<bool, GLFW_MOUSE_BUTTON_LAST> mouse_button_pressed_ = { false };
 	std::array<bool, GLFW_KEY_LAST> key_pressed_ = { false };
-	glm::vec2 last_mouse_pos_;
+	glm::vec2 last_mouse_pos_ = glm::vec2(0.0f);
+	GLFWwindow* glfw_window_ = nullptr;
 };

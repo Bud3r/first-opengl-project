@@ -10,6 +10,8 @@
 // TODO: Handle file access in release version.
 // TODO: Make a game.
 
+std::filesystem::path Engine::executable_path = std::filesystem::path("");
+
 namespace {
 	int width_ = kInitWindowWidth;
 	int height_ = kInitWindowHeight;
@@ -87,13 +89,6 @@ void Engine::Update(double deltaTime)
 
 	physics_server.Update((float)deltaTime);
 
-	mouse_pos = GetInputManager().GetLastMousePos();
-
-	double sensitivity = 0.0035;
-	mouse_movement = (mouse_pos - last_mouse_pos_) * sensitivity;
-	last_mouse_pos_ = mouse_pos;
-
-
 	if (deltaTime > 0.0) {
 		int fps = static_cast<int>(1.0 / deltaTime);
 		window_->SetTitle((std::string("FPS: ") + std::to_string(fps)).c_str());
@@ -132,6 +127,30 @@ void Engine::Update(double deltaTime)
 	glfwPollEvents();
 }
 
+void Engine::SetCmdLineArguments(int argc, char* args[]) {
+	if (argc < 1) {
+		throw std::logic_error("No arguments, can't get path.");
+		return;
+	}
+
+	executable_path = args[0];
+	
+	if (argc < 2) {
+		return;
+	}
+	
+	if (std::strcmp(args[1], "-pack") == 0) {
+		if (argc != 3) {
+			throw std::logic_error("Wrong argument count for the '-pack' command.");
+		}
+
+		resource_loader.SaveAssetPack(args[2], executable_path.replace_extension(".pck"));
+		Close();
+	} else {
+		throw std::logic_error("Unknown command.");
+	}
+}
+
 const ShaderProgram& Engine::GetDefaultShaderProgram() const {
 	return default_shader_program_;
 }
@@ -140,19 +159,4 @@ void Engine::AddGameObject(GameObject* process_object) {
 	process_object->engine = this;
 	process_objects.push_back(process_object);
 	process_object->AddedToEngine();
-}
-
-void Engine::Start() {
-	double lastFrameTime = 0.0;
-
-	while (!window_->ShouldClose())
-	{
-		double frameTime = glfwGetTime();
-		double delta = frameTime - lastFrameTime;
-		lastFrameTime = frameTime;
-
-		if (delta > 0.0) {
-			Update(delta);
-		}
-	}
 }

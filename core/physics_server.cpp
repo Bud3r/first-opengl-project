@@ -3,42 +3,50 @@
 
 PhysicsServer::PhysicsServer()
 {
-    RegisterDefaultAllocator();
-    Factory::sInstance = new Factory();
+    JPH::RegisterDefaultAllocator();
+    JPH::Factory::sInstance = new JPH::Factory();
 
-    RegisterTypes();
+    JPH::RegisterTypes();
 
-    temp_allocator = std::make_unique<TempAllocatorImpl>(10 * 1024 * 1024);
-    job_system = std::make_unique<JobSystemThreadPool>(cMaxPhysicsJobs, cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
+    temp_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024);
+    job_system = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, std::thread::hardware_concurrency() - 1);
 
-    const uint cMaxBodies = 1024;
-    const uint cNumBodyMutexes = 0;
-    const uint cMaxBodyPairs = 1024;
-    const uint cMaxContactConstraints = 1024;
+    const uint32_t cMaxBodies = 1024;
+    const uint32_t cNumBodyMutexes = 0;
+    const uint32_t cMaxBodyPairs = 1024;
+    const uint32_t cMaxContactConstraints = 1024;
 
-    m_physics_system.Init(
+    physics_system.Init(
         cMaxBodies ,
         cNumBodyMutexes,
         cMaxBodyPairs,
         cMaxContactConstraints,
-        broad_phase_layer_interface,
-        object_vs_broad_phase_layer_filter,
-        object_layer_pair_filter
+        broad_phase_layer_interface_,
+        object_vs_broad_phase_layer_filter_,
+        object_layer_pair_filter_
     );
 }
 
 PhysicsServer::~PhysicsServer() {
-    UnregisterTypes();
+    JPH::UnregisterTypes();
 
-    delete Factory::sInstance;
-    Factory::sInstance = nullptr;
+    delete JPH::Factory::sInstance;
+    JPH::Factory::sInstance = nullptr;
 }
 
 
-void PhysicsServer::Update(float deltaTime) {
-    const int cCollisionSteps = 1;
+void PhysicsServer::Update(float delta_time) {
+    time_since_last_update_ += delta_time;
 
-    m_physics_system.Update(deltaTime, cCollisionSteps, temp_allocator.get(), job_system.get());
+    float step_count = floor(time_since_last_update_ / time_between_updates_);
+    float delta = step_count * time_between_updates_;
+    time_since_last_update_ -= delta;
 
-    m_step_count += cCollisionSteps;
+    int i_step_count = static_cast<int>(step_count);
+
+    for (size_t i = 0; i < i_step_count; i++)
+    {
+        physics_system.Update(delta, i_step_count, temp_allocator.get(), job_system.get());
+        step_count += i_step_count;
+    }
 }

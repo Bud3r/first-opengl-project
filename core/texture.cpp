@@ -1,7 +1,8 @@
+#include "stb_image.h"
+#include "glad/glad.h"
+
 #include "texture.h"
 
-#include "stb_image.h"
-#include <array>
 
 Texture::Texture() {
 	glGenTextures(1, &id_);
@@ -17,7 +18,7 @@ Texture::~Texture() {
 	glDeleteTextures(1, &id_);
 }
 
-Texture* Texture::Load(const char* file_path) {
+Texture* Texture::FromFile(const char* file_path) {
 	int width, height, channels_in_file;
 	stbi_set_flip_vertically_on_load(false);
 	unsigned char* data = stbi_load(file_path, &width, &height, &channels_in_file, 0);

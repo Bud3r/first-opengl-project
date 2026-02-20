@@ -2,15 +2,11 @@
 
 #include <vector>
 
-#include <glm/glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "resource_loader.h"
+#include "helper.h"
 #include "texture.h"
 #include "shader_program.h"
 #include "mesh.h"
@@ -20,6 +16,7 @@ class Model
 public:
 	Model() { };
 	Model(const char* file_path);
+	Model(const void* ptr, size_t len);
 	Model(Mesh* mesh) {
 		meshes_.push_back(mesh);
 	}

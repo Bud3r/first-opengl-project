@@ -1,17 +1,17 @@
 #include "physics_model_game_object.h"
 
 
-PhysicsModelGameObject::PhysicsModelGameObject(Model* p_model, BodyCreationSettings* p_body_creation_settings) {
-    m_model = p_model;
-    m_initial_body_creation_setting = p_body_creation_settings;
+PhysicsModelGameObject::PhysicsModelGameObject(std::shared_ptr<Model> model, JPH::BodyCreationSettings* body_creation_settings) {
+    model_ = model;
+    initial_body_creation_setting_ = body_creation_settings;
 }
 
 void PhysicsModelGameObject::Process(double deltaTime)
 {
-    auto position = m_body.GetPosition();
-    auto rotation = m_body.GetRotation().GetEulerAngles();
+    auto position = body_.GetPosition();
+    auto rotation = body_.GetRotation().GetEulerAngles();
 
-    m_model->Draw(
+    model_->Draw(
         engine->GetDefaultShaderProgram(), 
         Model::GetModelMatrix(
             glm::vec3(position.GetX(), position.GetY(), position.GetZ()),
@@ -23,13 +23,13 @@ void PhysicsModelGameObject::Process(double deltaTime)
 
 void PhysicsModelGameObject::AddedToEngine()
 {
-    m_body.Init(&engine->physics_server, *m_initial_body_creation_setting);
-    m_initial_body_creation_setting = nullptr;
+    body_.Init(&engine->physics_server, *initial_body_creation_setting_);
+    initial_body_creation_setting_ = nullptr;
 }
 
 PhysicsBody& PhysicsModelGameObject::GetBody()
 {
-    return m_body;
+    return body_;
 }
 
 

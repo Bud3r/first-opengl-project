@@ -24,5 +24,5 @@ public:
 	void SetInt(const std::string &name, int value) const;
 	void SetFloat(const std::string &name, float value) const;
 private:
-	GLuint id_;
+	GLuint id_ = 0;
 };

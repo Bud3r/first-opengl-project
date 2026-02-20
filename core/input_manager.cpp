@@ -5,7 +5,7 @@ glm::vec3 InputManager::GetAction3d(std::string action, InputEventType event_typ
 {
 	auto k = actions_[action].keys[event_type];
 
-	if (event_type == InputEventType::KEYBOARD) {
+	if (event_type == InputEventType::kKeyboard) {
 		return glm::vec3(
 			static_cast<float>(key_pressed_[k[0]]) - static_cast<float>(key_pressed_[k[1]]),
 			static_cast<float>(key_pressed_[k[2]]) - static_cast<float>(key_pressed_[k[3]]),
@@ -20,7 +20,7 @@ glm::vec2 InputManager::GetAction2d(std::string action, InputEventType event_typ
 {
 	auto k = actions_[action].keys[event_type];
 
-	if (event_type == InputEventType::KEYBOARD) {
+	if (event_type == InputEventType::kKeyboard) {
 		return glm::vec2(
 			static_cast<float>(key_pressed_[k[0]]) - static_cast<float>(key_pressed_[k[1]]), 
 			static_cast<float>(key_pressed_[k[2]]) - static_cast<float>(key_pressed_[k[3]])
@@ -34,7 +34,7 @@ float InputManager::GetAction1d(std::string action, InputEventType event_type)
 {
 	auto k = actions_[action].keys[event_type];
 
-	if (event_type == InputEventType::KEYBOARD) {
+	if (event_type == InputEventType::kKeyboard) {
 		if (k.size() == 1) {
 			return key_pressed_[k[0]];
 		}
@@ -50,7 +50,7 @@ bool InputManager::GetActionBinary(std::string action, InputEventType event_type
 {
 	auto k = actions_[action].keys[event_type];
 
-	if (event_type == InputEventType::KEYBOARD) {
+	if (event_type == InputEventType::kKeyboard) {
 		if (k.size() == 1) {
 			return key_pressed_[k[0]];
 		}
@@ -88,16 +88,16 @@ void InputManager::SetMouseMode(MouseMode mouse_mode) {
 	switch (mouse_mode)
 	{
 		case MouseMode::kNormal:
-		glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(glfw_window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		break;
 		case MouseMode::kHidden:
-		glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		glfwSetInputMode(glfw_window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 		break;
 		case MouseMode::kCaptured:
-		glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
+		glfwSetInputMode(glfw_window_, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
 		break;
 		case MouseMode::kDisabled:
-		glfwSetInputMode(glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(glfw_window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		break;
 		default:
 		break;
@@ -105,7 +105,7 @@ void InputManager::SetMouseMode(MouseMode mouse_mode) {
 }
 
 MouseMode InputManager::GetMouseMode() {
-	switch (glfwGetInputMode(glfw_window, GLFW_CURSOR))
+	switch (glfwGetInputMode(glfw_window_, GLFW_CURSOR))
 	{
 		case GLFW_CURSOR_NORMAL:
 		return MouseMode::kNormal;
@@ -125,61 +125,64 @@ MouseMode InputManager::GetMouseMode() {
 	} 
 }
 
-void InputManager::KeyCallback(int key, int scancode, int action, int mods) {
+
+PressFlags InputManager::GetPressType(int action, bool was_pressed) {
 	bool pressed = GLFW_RELEASE != action;
-	float strength = 0.0f;
-	PressFlags press_type = PressFlags::NONE;
+	PressFlags press_type = PressFlags::kNone;
 
-	//if (key == Input_key_mouse_enable) {
-	//	if (action == GLFW_PRESS) {
-	//		GLFWwindow* window = glfwGetCurrentContext();
-	//		int cursor_mode = glfwGetInputMode(window, GLFW_CURSOR);
-	//		if (cursor_mode == GLFW_CURSOR_DISABLED) {
-	//			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	//		}
-	//		else {
-	//			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//		}
-	//	}
-	//}
-
-	if (key_pressed_[key] != pressed) {
-		press_type = press_type | PressFlags::JUST;
+	if (was_pressed != pressed) {
+		press_type = press_type | PressFlags::kJust;
 	}
 
 	switch (action)
 	{
-	case GLFW_PRESS:
-		press_type = press_type | PressFlags::PRESSED;
-		strength = 1.0f;
+		case GLFW_PRESS:
+		press_type = press_type | PressFlags::kPressed;
 		break;
-	case GLFW_RELEASE:
-		press_type = press_type | PressFlags::RELEASED;
-		strength = 1.0f;
+		case GLFW_RELEASE:
+		press_type = press_type | PressFlags::kReleased;
 		break;
-	case GLFW_REPEAT:
-		press_type = press_type | PressFlags::REPEAT;
-		strength = 1.0f;
+		case GLFW_REPEAT:
+		press_type = press_type | PressFlags::kRepeat;
 		break;
-	default:
+		default:
 		break;
 	}
 
+	return press_type;
+}
+
+
+void InputManager::KeyCallback(int key, int scancode, int action, int mods) {
+	bool pressed = GLFW_RELEASE != action;
+	PressFlags press_type = GetPressType(action, key_pressed_[key]);
+	
 	InputEvent event{
-		InputEventType::KEYBOARD,
+		InputEventType::kKeyboard,
 		press_type,
-		key,
 	};
 
-	for (auto func : input_callback_game_objects_) {
-		func->ProcessInput(event);
-	}
+	event.key = key;
+
+	PropagateInputEvent(event);
 
 	key_pressed_[key] = pressed;
 }
 
 void InputManager::MouseButtonCallback(int button, int action, int mods) {
+	bool pressed = GLFW_RELEASE != action;
+	PressFlags press_type = GetPressType(action, mouse_button_pressed_[button]);
+	
+	InputEvent event{
+		InputEventType::kMouseButton,
+		press_type,
+	};
 
+	event.button = button;
+
+	PropagateInputEvent(event);
+
+	mouse_button_pressed_[button] = pressed;
 }
 
 void InputManager::MousePosCallback(double xpos, double ypos) {
@@ -187,13 +190,31 @@ void InputManager::MousePosCallback(double xpos, double ypos) {
 
 	glm::vec2 movement = mouse_pos - last_mouse_pos_;
 
+	InputEvent event{
+		InputEventType::kMouseMotion,
+		PressFlags::kNone,
+	};
+
+	event.mouse_movement_x = movement.x;
+	// When moving the mouse down it's positive relative to the screen.
+	// Inverting it will make is clearer for 3d space.
+	event.mouse_movement_y = -movement.y;
+
+	PropagateInputEvent(event);
+
 	last_mouse_pos_ = mouse_pos;
 }
 
 void InputManager::SetRawMouseMotion(bool turned_on) {
-	glfwSetInputMode(glfw_window, GLFW_RAW_MOUSE_MOTION, static_cast<int>(turned_on));
+	glfwSetInputMode(glfw_window_, GLFW_RAW_MOUSE_MOTION, static_cast<int>(turned_on));
 }
 
 bool InputManager::GetRawMouseMotion() {
-	return static_cast<bool>(glfwGetInputMode(glfw_window, GLFW_RAW_MOUSE_MOTION));
+	return static_cast<bool>(glfwGetInputMode(glfw_window_, GLFW_RAW_MOUSE_MOTION));
+}
+
+void InputManager::PropagateInputEvent(InputEvent& event) {
+	for (auto func : input_callback_game_objects_) {
+		func->ProcessInput(event);
+	}
 }

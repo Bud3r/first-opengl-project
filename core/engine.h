@@ -5,6 +5,7 @@
 #include <exception>
 #include <cstring>
 #include <cassert>
+#include <filesystem>
 
 #include <fmt/core.h>
 #include <glad/glad.h>
@@ -26,6 +27,7 @@
 #include "game_object.h"
 #include "resource_loader.h"
 #include "input_manager.h"
+#include "texture.h"
 
 constexpr int kUboBinding = 0;
 constexpr int kInitWindowWidth = 800;
@@ -66,7 +68,51 @@ public:
 	/// <summary>
 	/// This starts the game loop.
 	/// </summary>
-	void Start();
+	template<class T> 
+	requires std::is_base_of_v<GameObject, T>
+	void Start() {
+		if (ShouldClose()) {
+			return;
+		}
+
+		assert(process_objects.empty() && "Can't set root game object when it's not the first added.");
+
+#ifdef _DEBUG
+		resource_loader.load_mode = ResourceLoader::LoadMode::Directory;
+		resource_loader.load_mode = ResourceLoader::LoadMode::AssetPack;
+		try {
+			resource_loader.LoadAssetPack(executable_path.replace_extension(".pck"));
+		}
+		catch (std::logic_error& e) {
+			std::cerr << e.what() << std::endl;
+			return;
+		}
+#else
+		resource_loader.load_mode = ResourceLoader::LoadMode::AssetPack;
+		try {
+			resource_loader.LoadAssetPack(executable_path.replace_extension(".pck"));
+		}
+		catch (std::logic_error& e) {
+			std::cerr << e.what() << std::endl;
+			return;
+		}
+#endif // _DEBUG
+
+		AddGameObject(new T);
+
+		double lastFrameTime = 0.0;
+
+		while (!window_->ShouldClose())
+		{
+			double frameTime = glfwGetTime();
+			double delta = frameTime - lastFrameTime;
+			lastFrameTime = frameTime;
+
+			if (delta > 0.0) {
+				Update(delta);
+			}
+		}
+	};
 	/// <summary>
 	/// Call once before you call start to add the first game object.
 	/// </summary>
@@ -79,15 +125,17 @@ public:
 		return window_->input_manager;
 	}
 
-	template<class T> 
-	requires std::is_base_of_v<GameObject, T>
-	void SetRootGameObject() {
-		assert(process_objects.empty() && "Can't set root game object when it's not the first added.");
-		AddGameObject(new T);
-	}
 	void Close() {
 		glfwSetWindowShouldClose(window_->GetGlfwWindow(), true);
 	}
+	bool ShouldClose() {
+		return window_->ShouldClose();
+	}
+	static const std::filesystem::path& GetExecutablePath() {
+		return executable_path;
+	}
+
+	void SetCmdLineArguments(int argc, char* args[]);
 
 	PhysicsServer physics_server;
 	ResourceLoader resource_loader;
@@ -95,11 +143,10 @@ public:
 	Camera* current_camera = nullptr;
 	std::vector<GameObject*> process_objects;
 
-	glm::dvec2 mouse_movement;
-	glm::dvec2 mouse_pos;
-
 	const ShaderProgram& GetDefaultShaderProgram() const;
 private:
+	static std::filesystem::path executable_path;
+
 	GLFWwindow* CreateWindow();
 
 	ShaderProgram default_shader_program_;

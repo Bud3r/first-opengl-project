@@ -35,31 +35,31 @@ Mesh* _create_square_mesh(glm::vec3 e) {
 
 
 void MainGameObject::AddedToEngine() {
-    auto ak_body_settings = BodyCreationSettings(
-        new BoxShape(Vec3Arg(1.0f, 1.0f, 1.0f)),
-        RVec3Arg(0.0_r, 0.5_r, 0.0_r),
-        QuatArg::sIdentity(),
-        EMotionType::Dynamic,
+    auto ak_body_settings = JPH::BodyCreationSettings(
+        new JPH::BoxShape(JPH::Vec3Arg(1.0f, 1.0f, 1.0f)),
+        JPH::RVec3Arg(0.0_r, 0.5_r, 0.0_r),
+        JPH::QuatArg::sIdentity(),
+        JPH::EMotionType::Dynamic,
         layers::kMoving);
 
-    auto floor_body_settings = BodyCreationSettings(
-        new BoxShape(Vec3Arg(12.0f, 0.1f, 12.0f)),
-        RVec3Arg(0.0_r, -1.0_r, 0.0_r),
-        QuatArg::sIdentity(),
-        EMotionType::Static,
+    auto floor_body_settings = JPH::BodyCreationSettings(
+        new JPH::BoxShape(JPH::Vec3Arg(12.0f, 0.1f, 12.0f)),
+        JPH::RVec3Arg(0.0_r, -1.0_r, 0.0_r),
+        JPH::QuatArg::sIdentity(),
+        JPH::EMotionType::Static,
         layers::kStatic
         );
 
     std::shared_ptr<Model> ak_model = GetEngine().resource_loader.Load<Model>("ak47.glb");
 
     Mesh* floor_mesh = _create_square_mesh(glm::vec3(8.0f, 0.1f, 8.0f));
-    Model* floor_model = new Model(floor_mesh);
+    std::shared_ptr<Model> floor_model = std::make_shared<Model>(floor_mesh);
     floor_game_object = new PhysicsModelGameObject(floor_model, &floor_body_settings);
     GetEngine().AddGameObject(floor_game_object);
     floor_game_object->modulate = glm::vec4(0.5, 0.5, 0.5, 1.0);
 
-    ak_game_object = new PhysicsModelGameObject(ak_model.get(), &ak_body_settings);
-    GetEngine().AddGameObject(ak_game_object);
+    //ak_game_object = new PhysicsModelGameObject(ak_model, &ak_body_settings);
+    //GetEngine().AddGameObject(ak_game_object);
     //ak_game_object->GetBody().SetLinearVelocity(Vec3Arg(0.0f, -1.0f, 0.0f));
 
     player_game_object = new PlayerGameObject();
@@ -69,6 +69,8 @@ void MainGameObject::AddedToEngine() {
 }
 
 void MainGameObject::Process(double delta) {
-    model->Draw(GetEngine().GetDefaultShaderProgram(), glm::mat4(1.0f));
+    glm::mat4 model_mat(1.0f);
+    model_mat = glm::translate(model_mat, { 0.0f, -0.25f , 1.0f });
+    model->Draw(GetEngine().GetDefaultShaderProgram(), model_mat);
 }
 

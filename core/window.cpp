@@ -1,6 +1,3 @@
-#include <iostream>
-#include <map>
-
 #include "window.h"
 
 std::map<GLFWwindow*, Window*> Window::glfw_window_to_object = {};
@@ -40,7 +37,7 @@ Window::Window(int width, int height, const char* title) {
 		std::cerr << "Failed to initialize GLAD" << std::endl;
 	}
 
-	input_manager.glfw_window = glfw_window_;
+	input_manager.SetGlfwWindow(glfw_window_);
 
 	glfw_window_to_object[glfw_window_] = this;
 

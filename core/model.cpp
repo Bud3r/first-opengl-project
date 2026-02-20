@@ -4,7 +4,21 @@
 Model::Model(const char* filePath)
 {
 	Assimp::Importer importer;
+	
 	const aiScene* scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		std::cerr << importer.GetErrorString() << std::endl;
+		return;
+	}
+
+	ParseNode(scene->mRootNode, scene);
+}
+
+Model::Model(const void* ptr, size_t len) {
+	Assimp::Importer importer;
+
+	const aiScene* scene = importer.ReadFileFromMemory(ptr, len, aiProcess_Triangulate | aiProcess_FlipUVs);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
 		std::cerr << importer.GetErrorString() << std::endl;
@@ -17,10 +31,11 @@ Model::Model(const char* filePath)
 
 glm::mat4 Model::GetModelMatrix(glm::vec3 p_position, glm::vec3 p_rotation) {
 	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, p_position);
+	// FIXME: Fix rotation. Their handled wierdly.
 	model = glm::rotate(model, p_rotation.x, glm::vec3(1.0, 0.0, 0.0));
 	model = glm::rotate(model, p_rotation.y, glm::vec3(0.0, 1.0, 0.0));
 	model = glm::rotate(model, p_rotation.z, glm::vec3(0.0, 0.0, 1.0));
-	model = glm::translate(model, p_position);
 	return model;
 }
 

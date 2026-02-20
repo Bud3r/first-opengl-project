@@ -1,8 +1,12 @@
 ﻿cmake_minimum_required(VERSION 3.10)
 
+# Can use this to make building cleaner.
+#"${CMAKE_BINARY_DIR}/bin/$<CONFIG>"
+set(assets_path "${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 add_compile_definitions(DEBUG_ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
 add_compile_definitions(COMPILE_ASSETS_PATH="./assets/")
 
@@ -32,7 +36,10 @@ add_library(
 	"core/shader_program.cpp" "core/shader_program.h"
 	"core/texture.cpp" "core/texture.h"
 	"core/window.cpp" "core/window.h"
-)
+	"core/resource_loaders/model_loader.h" "core/resource_loaders/model_loader.cpp"
+	"core/resource_loaders/texture_loader.h" "core/resource_loaders/texture_loader.cpp"
+	"core/resource_loaders/resource_format_loader.h"
+     "core/resource_loaders/shader_program_loader.h" "core/resource_loaders/shader_program_loader.cpp")
 
 target_include_directories(BudderEngine-Core PUBLIC "core/include")
 
@@ -52,6 +59,7 @@ add_executable(BudderEngine-Game
 	"game/src/player_game_object.cpp" "game/src/player_game_object.h"
 	"game/src/main_game_object.cpp" "game/src/main_game_object.h"
 	"game/src/physics_model_game_object.cpp" "game/src/physics_model_game_object.h"
+	"game/src/ball_game_object.cpp"
 )
 
 target_include_directories(BudderEngine-Game 
@@ -61,4 +69,16 @@ target_include_directories(BudderEngine-Game
 
 target_link_libraries(BudderEngine-Game
 	PRIVATE BudderEngine-Core
+)
+
+#add_custom_command(
+#	TARGET BudderEngine-Game POST_BUILD
+#	COMMAND "${CMAKE_BINARY_DIR}/bin/BudderEngine-Game.exe" "-pack" "${CMAKE_CURRENT_SOURCE_DIR}/game/assets/"
+#	VERBATIM
+#)
+
+set_target_properties(
+  BudderEngine-Game
+  PROPERTIES
+  DEBUG_POSTFIX "-Debug"
 )
