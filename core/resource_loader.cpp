@@ -92,32 +92,6 @@ void ResourceLoader::SaveAssetPack(const std::filesystem::path& assets_directory
 
 	uintmax_t file_offset = 0;
 
-	// Generate assets.
-	for (std::filesystem::directory_entry file : assets_iterator) {
-		if (!file.is_regular_file()) {
-			continue;
-		}
-
-		if (!CanLoad(file.path())) {
-			continue;
-		}
-
-		if (!extension_to_format_loader_[file.path().extension()]->ShouldCreateGeneratedAsset()) {
-			continue;
-		}
-
-		std::filesystem::path generated_asset_path = 
-			generated_assets_path / std::filesystem::relative(file.path(), ASSETS_PATH);
-		std::cout << "Generated works: " << std::filesystem::create_directories(generated_asset_path.parent_path()) << std::endl;
-		std::ifstream base_file(file.path());
-		std::ofstream generated_file(generated_asset_path);
-		extension_to_format_loader_[file.path().extension()]->CreateGeneratedAsset(
-			base_file, 
-			generated_file,
-			file.path()
-			);
-	}
-
 	// Create pack header.
 	for (std::filesystem::directory_entry file : assets_iterator) {
 		if (!file.is_regular_file()) {
@@ -128,55 +102,48 @@ void ResourceLoader::SaveAssetPack(const std::filesystem::path& assets_directory
 			continue;
 		}
 
-		// {path}
-		// {offset}{size}
-		// {files ...}
-
 		std::filesystem::path relative_path =
-			std::filesystem::relative(file.path(), assets_directory_path).lexically_normal();
-
-		std::ifstream asset_file(file.path());
-		AssetData data = { relative_path.generic_string(), file.path().string(), file_offset , file.file_size() };
-		asset_pack << data.path.string() << "\n" << data.offset << "\n" << data.size << "\n";
-		AddAssetData(data);
-		file_offset += file.file_size();
-	}
-
-	// Insert files.
-	for (std::filesystem::directory_entry file : assets_iterator) {
-		if (!file.is_regular_file()) {
-			continue;
-		}
-
-		if (!CanLoad(file.path())) {
-			continue;
-		}
-		
-		// {path}
-		// {offset}{size}
-		// {files ...}
-		
-		std::filesystem::path relative_path = 
-			std::filesystem::relative(file.path(), assets_directory_path).lexically_normal();
+			std::filesystem::relative(file.path(), assets_directory_path);
+		std::filesystem::path absulute_path;
 
 		std::ifstream asset_file;
 
 		if (extension_to_format_loader_[file.path().extension()]->ShouldCreateGeneratedAsset()) {
-			asset_file = std::ifstream(file.path());
+			std::filesystem::path generated_asset_path;
+			generated_asset_path =
+				generated_assets_path / std::filesystem::relative(file.path(), ASSETS_PATH);
+			std::cout << "Generated works: " << std::filesystem::create_directories(generated_asset_path.parent_path()) << std::endl;
+			std::ifstream base_file(file.path());
+			std::ofstream generated_file(generated_asset_path);
+			extension_to_format_loader_[file.path().extension()]->CreateGeneratedAsset(
+				base_file,
+				generated_file,
+				file.path()
+			);
+			asset_file = std::ifstream(generated_asset_path);
+			absulute_path = generated_asset_path;
 		} else {
 			asset_file = std::ifstream(file.path());
+			absulute_path = file.path();
 		}
-
-		AssetData data = { relative_path.generic_string(), file.path().string(), file_offset , file.file_size()};
+		asset_file.seekg(0, std::ios_base::end);
+		AssetData data = { relative_path.generic_string(), absulute_path.string(), file_offset , asset_file.tellg() };
 		asset_pack << data.path.string() << "\n" << data.offset << "\n" << data.size << "\n";
 		AddAssetData(data);
-		file_offset += file.file_size();
+		file_offset += data.size;
 	}
 
 	asset_pack << kAssetListStartMarker << std::endl;
 
 	for (AssetData data : assets_data_) {
-		std::ifstream asset_file(data.absolute_path, std::ios::binary);
+		std::ifstream asset_file; 
+		
+		if (extension_to_format_loader_[data.path.extension()]->ShouldCreateGeneratedAsset()) {
+			asset_file = std::ifstream(data.absolute_path, std::ios::binary);
+		} else {
+			asset_file = std::ifstream(data.absolute_path, std::ios::binary);
+		}
+		asset_file = std::ifstream(data.absolute_path, std::ios::binary);
 		asset_pack << asset_file.rdbuf();
 		asset_file.close();
 		std::cerr << "Inserted file: " << data.path.string() << " Offset: " << data.offset << " Size: " << data.size << std::endl;
