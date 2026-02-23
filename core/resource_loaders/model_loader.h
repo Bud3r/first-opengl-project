@@ -1,5 +1,6 @@
-#include "resource_format_loader.h"
+#pragma once
 
+#include "resource_format_loader.h"
 
 class ModelLoader : public ResourceFormatLoader {
 public:

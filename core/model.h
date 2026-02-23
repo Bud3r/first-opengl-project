@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -20,7 +21,7 @@ public:
 	Model(Mesh* mesh) {
 		meshes_.push_back(mesh);
 	}
-	void Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4 modulate = glm::vec4(1.0));
+	void Draw(const std::shared_ptr<ShaderProgram> program, glm::mat4 model_matrix, glm::vec4 modulate = glm::vec4(1.0));
 	glm::mat4 static GetModelMatrix(glm::vec3 position, glm::vec3 rotation);
 private:
 	void ParseNode(aiNode* node, const aiScene* scene);

@@ -33,9 +33,6 @@ Engine::Engine() {
 	window_->MakeContextCurrent();
 	stbi_set_flip_vertically_on_load(true);
 
-	default_shader_program_.Load(get_real_file_path("shaders/shader.vert").c_str(), 
-		get_real_file_path("shaders/shader.frag").c_str());
-
 	unsigned char default_texture_data[3 * 4] = {
 		255, 0, 255,
 		0, 0, 0,
@@ -151,7 +148,7 @@ void Engine::SetCmdLineArguments(int argc, char* args[]) {
 	}
 }
 
-const ShaderProgram& Engine::GetDefaultShaderProgram() const {
+const std::shared_ptr<ShaderProgram> Engine::GetDefaultShaderProgram() const {
 	return default_shader_program_;
 }
 

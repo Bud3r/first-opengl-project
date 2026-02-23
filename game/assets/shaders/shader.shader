@@ -1,2 +1,2 @@
 frag=shader.frag
-vert=shader.frag
+vert=shader.vert

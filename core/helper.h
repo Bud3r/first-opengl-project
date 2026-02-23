@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <filesystem>
 
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
@@ -10,7 +11,7 @@
 
 #define FILE_PATH(file) "F:\\Misc\\cmake-test-project\\" #file
 
-std::string get_real_file_path(const std::string& path);
+std::filesystem::path get_real_file_path(const std::filesystem::path& path);
 
 
 inline JPH::Vec3 GlmVecToJolt(glm::vec3 vec) {

@@ -2,6 +2,7 @@
 
 #include "resource_loaders/texture_loader.h"
 #include "resource_loaders/model_loader.h"
+#include "resource_loaders/shader_program_loader.h"
 #include "engine.h"
 
 ResourceLoader::ResourceLoader()
@@ -10,6 +11,7 @@ ResourceLoader::ResourceLoader()
 
 	AddResourceFormatLoader<TextureLoader>();
 	AddResourceFormatLoader<ModelLoader>();
+	AddResourceFormatLoader<ShaderProgramLoader>();
 }
 
 bool ResourceLoader::CanLoad(std::filesystem::path path) const {
@@ -32,17 +34,18 @@ bool ResourceLoader::CanLoadExtension(std::filesystem::path extension) const {
 	return true;
 }
 
-void* ResourceLoader::PtrFromFile(std::string file_path, std::string extension) {
+void* ResourceLoader::PtrFromFile(std::filesystem::path file_path, std::filesystem::path extension) {
+	file_path = get_real_file_path(file_path);
 	if (!std::filesystem::exists(file_path)) {
-		throw std::logic_error("File '" + file_path + "' does not exist.");
+		throw std::logic_error("File '" + file_path.string() + "' does not exist.");
 	}
 
-	return extension_to_format_loader_[extension]->LoadFromFile(file_path);
+	return extension_to_format_loader_[extension]->LoadFromFile(file_path.string());
 }
 
-void* ResourceLoader::PtrFromPack(std::string asset_path, std::string extension) {
+void* ResourceLoader::PtrFromPack(std::filesystem::path asset_path, std::filesystem::path extension) {
 	if (!AssetExists(asset_path)) {
-		throw std::logic_error("Asset '" + asset_path + "' does not exist.");
+		throw std::logic_error("Asset '" + asset_path.string() + "' does not exist.");
 	}
 
 	std::vector<char> data = GetAssetData(asset_path);
@@ -51,7 +54,7 @@ void* ResourceLoader::PtrFromPack(std::string asset_path, std::string extension)
 }
 
 
-const std::vector<char> ResourceLoader::GetAssetData(std::string asset_path) {
+const std::vector<char> ResourceLoader::GetAssetData(std::filesystem::path asset_path) {
 	assert(std::filesystem::exists(pack_path_) && "Asset pack file path doesn't exit, make sure you load the pack before calling this.");
 
 	if (!asset_data_map_.contains(asset_path)) {
@@ -72,7 +75,7 @@ const std::vector<char> ResourceLoader::GetAssetData(std::string asset_path) {
 	std::vector<char> data;
 	data.resize(asset_data.size);
 
-	asset_pack.seekg(asset_data.offset);
+	asset_pack.seekg(asset_data.offset + header_offset_);
 	asset_pack.read(&data[0], asset_data.size);
 
 	// TODO: It copies the vector
@@ -84,8 +87,38 @@ void ResourceLoader::SaveAssetPack(const std::filesystem::path& assets_directory
 	std::ofstream asset_pack(save_path, std::ios::binary);
 	std::filesystem::recursive_directory_iterator assets_iterator(assets_directory_path);
 
+	std::filesystem::path assets_path = std::filesystem::path(ASSETS_PATH);
+	std::filesystem::path generated_assets_path = std::filesystem::path(GENERATED_ASSETS_PATH);
+
 	uintmax_t file_offset = 0;
 
+	// Generate assets.
+	for (std::filesystem::directory_entry file : assets_iterator) {
+		if (!file.is_regular_file()) {
+			continue;
+		}
+
+		if (!CanLoad(file.path())) {
+			continue;
+		}
+
+		if (!extension_to_format_loader_[file.path().extension()]->ShouldCreateGeneratedAsset()) {
+			continue;
+		}
+
+		std::filesystem::path generated_asset_path = 
+			generated_assets_path / std::filesystem::relative(file.path(), ASSETS_PATH);
+		std::cout << "Generated works: " << std::filesystem::create_directories(generated_asset_path.parent_path()) << std::endl;
+		std::ifstream base_file(file.path());
+		std::ofstream generated_file(generated_asset_path);
+		extension_to_format_loader_[file.path().extension()]->CreateGeneratedAsset(
+			base_file, 
+			generated_file,
+			file.path()
+			);
+	}
+
+	// Create pack header.
 	for (std::filesystem::directory_entry file : assets_iterator) {
 		if (!file.is_regular_file()) {
 			continue;
@@ -99,10 +132,43 @@ void ResourceLoader::SaveAssetPack(const std::filesystem::path& assets_directory
 		// {offset}{size}
 		// {files ...}
 
-		std::filesystem::path relative_path = std::filesystem::relative(file.path(), assets_directory_path);
+		std::filesystem::path relative_path =
+			std::filesystem::relative(file.path(), assets_directory_path).lexically_normal();
+
 		std::ifstream asset_file(file.path());
-		AssetData data = { relative_path.string(), file.path().string(), file_offset , file.file_size() };
-		asset_pack << data.path.c_str() << "\n" << data.offset << "\n" << data.size << "\n";
+		AssetData data = { relative_path.generic_string(), file.path().string(), file_offset , file.file_size() };
+		asset_pack << data.path.string() << "\n" << data.offset << "\n" << data.size << "\n";
+		AddAssetData(data);
+		file_offset += file.file_size();
+	}
+
+	// Insert files.
+	for (std::filesystem::directory_entry file : assets_iterator) {
+		if (!file.is_regular_file()) {
+			continue;
+		}
+
+		if (!CanLoad(file.path())) {
+			continue;
+		}
+		
+		// {path}
+		// {offset}{size}
+		// {files ...}
+		
+		std::filesystem::path relative_path = 
+			std::filesystem::relative(file.path(), assets_directory_path).lexically_normal();
+
+		std::ifstream asset_file;
+
+		if (extension_to_format_loader_[file.path().extension()]->ShouldCreateGeneratedAsset()) {
+			asset_file = std::ifstream(file.path());
+		} else {
+			asset_file = std::ifstream(file.path());
+		}
+
+		AssetData data = { relative_path.generic_string(), file.path().string(), file_offset , file.file_size()};
+		asset_pack << data.path.string() << "\n" << data.offset << "\n" << data.size << "\n";
 		AddAssetData(data);
 		file_offset += file.file_size();
 	}
@@ -113,7 +179,7 @@ void ResourceLoader::SaveAssetPack(const std::filesystem::path& assets_directory
 		std::ifstream asset_file(data.absolute_path, std::ios::binary);
 		asset_pack << asset_file.rdbuf();
 		asset_file.close();
-		std::cerr << "Inserted file: " << data.path << " Offset: " << data.offset << " Size: " << data.size << std::endl;
+		std::cerr << "Inserted file: " << data.path.string() << " Offset: " << data.offset << " Size: " << data.size << std::endl;
 	};
 
 	asset_pack.close();
@@ -129,7 +195,7 @@ void ResourceLoader::LoadAssetPack(const std::filesystem::path& load_path) {
 	std::string line;
 
 	const int kMaxAssetCount = 100000;
-	int assetCount = 0;
+	int asset_count = 0;
 
 	while (true)
 	{
@@ -147,20 +213,22 @@ void ResourceLoader::LoadAssetPack(const std::filesystem::path& load_path) {
 		asset_pack.ignore(1);
 		AddAssetData(data);
 		std::cout << "Loaded asset: " << data.path << ", Offset: " << data.offset << ", Size: " << data.size << std::endl;
-		assetCount++;
+		asset_count++;
 
-		if (assetCount > kMaxAssetCount) {
+		if (asset_count > kMaxAssetCount) {
 			throw std::logic_error("More than 100000 assets, parser parsed incorrectly or you just have a lot of assets.");
 		}
 	}
 
+	header_offset_ = asset_pack.tellg();
+
 	pack_path_ = load_path;
 	load_mode = LoadMode::AssetPack;
-	std::cout << "Loaded pack: " << load_path << std::endl;
+	std::cout << "Loaded pack: " << load_path << " Header offset: " << header_offset_ << std::endl;
 }
 
-bool ResourceLoader::AssetExists(std::string asset) {
-	return asset_data_map_.contains(asset);
+bool ResourceLoader::AssetExists(const std::filesystem::path& asset_path) {
+	return asset_data_map_.contains(asset_path);
 }
 
 void ResourceLoader::AddAssetData(const AssetData& asset_path_data) {

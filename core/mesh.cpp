@@ -29,7 +29,7 @@ Mesh::Mesh(std::vector<Vertex> p_vertices, std::vector<uint32_t> p_indices, std:
 
 }
 
-void Mesh::Draw(const ShaderProgram& program) {
+void Mesh::Draw(const std::shared_ptr<ShaderProgram> program) {
 	for (std::shared_ptr<Texture> texture : textures_) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture->GetId());

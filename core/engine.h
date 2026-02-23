@@ -79,14 +79,6 @@ public:
 
 #ifdef _DEBUG
 		resource_loader.load_mode = ResourceLoader::LoadMode::Directory;
-		resource_loader.load_mode = ResourceLoader::LoadMode::AssetPack;
-		try {
-			resource_loader.LoadAssetPack(executable_path.replace_extension(".pck"));
-		}
-		catch (std::logic_error& e) {
-			std::cerr << e.what() << std::endl;
-			return;
-		}
 #else
 		resource_loader.load_mode = ResourceLoader::LoadMode::AssetPack;
 		try {
@@ -97,6 +89,7 @@ public:
 			return;
 		}
 #endif // _DEBUG
+		default_shader_program_ = resource_loader.Load<ShaderProgram>("shaders/shader.shader");
 
 		AddGameObject(new T);
 
@@ -143,13 +136,13 @@ public:
 	Camera* current_camera = nullptr;
 	std::vector<GameObject*> process_objects;
 
-	const ShaderProgram& GetDefaultShaderProgram() const;
+	const std::shared_ptr<ShaderProgram> GetDefaultShaderProgram() const;
 private:
 	static std::filesystem::path executable_path;
 
 	GLFWwindow* CreateWindow();
 
-	ShaderProgram default_shader_program_;
+	std::shared_ptr<ShaderProgram> default_shader_program_;
 	std::shared_ptr<Texture> default_texture_;
 
 	Window* window_;

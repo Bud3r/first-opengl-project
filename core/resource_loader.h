@@ -25,10 +25,10 @@ public:
 	ResourceLoader();
 	bool CanLoad(std::filesystem::path path) const;
 	bool CanLoadExtension(std::filesystem::path extension) const;
-	const std::vector<char> GetAssetData(std::string asset);
+	const std::vector<char> GetAssetData(std::filesystem::path asset);
 	void SaveAssetPack(const std::filesystem::path& assets_directory_path, const std::filesystem::path& save_path);
 	void LoadAssetPack(const std::filesystem::path& load_path);
-	bool AssetExists(std::string asset);
+	bool AssetExists(const std::filesystem::path& asset);
 
 	template<typename T>
 	requires std::is_base_of_v<ResourceFormatLoader, T>
@@ -41,47 +41,37 @@ public:
 	}
 
 	template<typename T>
-	std::shared_ptr<T> Load(std::string p_file_path) {
-		std::string real_path = get_real_file_path(p_file_path);
-
+	std::shared_ptr<T> Load(std::filesystem::path asset_path) {
 		void* ptr = 0;
 
-		if (file_path_to_resource_.contains(real_path)) {
-			std::weak_ptr<void> weak = file_path_to_resource_[real_path];
+		if (file_path_to_resource_.contains(asset_path)) {
+			std::weak_ptr<void> weak = file_path_to_resource_[asset_path];
 
 			if (!weak.expired()) {
-				//std::cout << ("Already loaded file: " + real_path) << std::endl;
-
 				return std::static_pointer_cast<T>(weak.lock());
 			}
 		}
 
-		size_t i = real_path.find_last_of(".");
-
-		if (i == std::string::npos) {
-			throw std::logic_error(real_path + " has no file extension");
-		}
-
-		std::string extension = real_path.substr(i);
-
 		switch (load_mode)
 		{
 			case LoadMode::Directory:
-			ptr = PtrFromFile(real_path, extension);
+			ptr = PtrFromFile(asset_path, asset_path.extension());
 			break;
 			case LoadMode::AssetPack:
-			ptr = PtrFromPack(p_file_path, extension);
+			ptr = PtrFromPack(asset_path, asset_path.extension());
 			break;
 			default:
 			break;
 		}
 
 		if (ptr == nullptr) {
-			throw std::logic_error("Function failed to load file " + real_path);
+			throw std::logic_error("Loader failed to load file " + asset_path.string());
 		}
 
+		std::cout << "Loaded: " + asset_path.string() << std::endl;
+
 		std::shared_ptr<T> shared((T*)ptr);
-		file_path_to_resource_[real_path] = shared;
+		file_path_to_resource_[asset_path] = shared;
 
 		return shared;
 	};
@@ -89,23 +79,24 @@ public:
 	LoadMode load_mode = LoadMode::Directory;
 private:
 	struct AssetData {
-		std::string path = "";
-		std::string absolute_path = "";
+		std::filesystem::path path = "";
+		std::filesystem::path absolute_path = "";
 		uintmax_t offset = 0;
 		uintmax_t size = 0;
 	};
 
-	void* PtrFromFile(std::string file_path, std::string extension);
-	void* PtrFromPack(std::string asset_path, std::string extension);
+	void* PtrFromFile(std::filesystem::path asset_path, std::filesystem::path extension);
+	void* PtrFromPack(std::filesystem::path asset_path, std::filesystem::path extension);
 	void AddAssetData(const AssetData& asset_path_data);
 	
 	static constexpr std::string_view kAssetListStartMarker = "file start";
+	size_t header_offset_ = 0;
 
-	std::map<std::string, std::unique_ptr<ResourceFormatLoader>> extension_to_format_loader_ = { };
-	std::map<std::string, std::weak_ptr<void>> file_path_to_resource_ = { };
-	
+	std::map<std::filesystem::path, std::unique_ptr<ResourceFormatLoader>> extension_to_format_loader_ = { };
+	std::map<std::filesystem::path, std::weak_ptr<void>> file_path_to_resource_ = { };
+
 	std::filesystem::path pack_path_;
-	std::map<std::string, AssetData> asset_data_map_ = {};
+	std::map<std::filesystem::path, AssetData> asset_data_map_ = {};
 	std::vector<AssetData> assets_data_ = {};
 };
 

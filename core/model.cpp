@@ -40,10 +40,10 @@ glm::mat4 Model::GetModelMatrix(glm::vec3 p_position, glm::vec3 p_rotation) {
 }
 
 
-void Model::Draw(const ShaderProgram& program, glm::mat4 model_matrix, glm::vec4 p_modulate) {
-	program.Use();
-	glUniform4fv(program.GetLocation("modulate"), 1, glm::value_ptr(p_modulate));
-	glUniformMatrix4fv(program.GetLocation("model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+void Model::Draw(const std::shared_ptr<ShaderProgram> program, glm::mat4 model_matrix, glm::vec4 p_modulate) {
+	program->Use();
+	glUniform4fv(program->GetLocation("modulate"), 1, glm::value_ptr(p_modulate));
+	glUniformMatrix4fv(program->GetLocation("model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
 	for (auto mesh : meshes_) {
 		mesh->Draw(program);
 	}

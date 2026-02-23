@@ -17,7 +17,7 @@ class Mesh
 {
  public:
 	Mesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices, std::vector<std::shared_ptr<Texture>> textures);
-	void Draw(const ShaderProgram& program);
+	void Draw(const std::shared_ptr<ShaderProgram> program);
 	
  private:
 	std::vector<Vertex> vertices_;

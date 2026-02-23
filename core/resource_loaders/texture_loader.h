@@ -1,3 +1,5 @@
+#pragma once
+
 #include "resource_format_loader.h"
 
 

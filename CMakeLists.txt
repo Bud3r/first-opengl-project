@@ -7,8 +7,8 @@ set(assets_path "${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_compile_definitions(DEBUG_ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
-add_compile_definitions(COMPILE_ASSETS_PATH="./assets/")
+add_compile_definitions(ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
+add_compile_definitions(GENERATED_ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/.generated_assets/")
 
 project(BudderEngine)
 
