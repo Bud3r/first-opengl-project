@@ -42,7 +42,8 @@ void PhysicsServer::Update(float delta_time) {
     float delta = step_count * time_between_updates_;
     time_since_last_update_ -= delta;
 
-    int i_step_count = static_cast<int>(step_count);
+    const int kMaxStepCount = 8;
+    int i_step_count = std::min(static_cast<int>(step_count), kMaxStepCount);
 
     for (size_t i = 0; i < i_step_count; i++)
     {

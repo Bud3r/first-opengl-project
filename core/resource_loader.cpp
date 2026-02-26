@@ -3,6 +3,7 @@
 #include "resource_loaders/texture_loader.h"
 #include "resource_loaders/model_loader.h"
 #include "resource_loaders/shader_program_loader.h"
+#include "resource_loaders/fmod_bank_loader.h"
 #include "engine.h"
 
 ResourceLoader::ResourceLoader()
@@ -12,6 +13,7 @@ ResourceLoader::ResourceLoader()
 	AddResourceFormatLoader<TextureLoader>();
 	AddResourceFormatLoader<ModelLoader>();
 	AddResourceFormatLoader<ShaderProgramLoader>();
+	AddResourceFormatLoader<FmodBankLoader>();
 }
 
 bool ResourceLoader::CanLoad(std::filesystem::path path) const {

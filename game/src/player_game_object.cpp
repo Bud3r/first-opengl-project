@@ -117,6 +117,10 @@ void PlayerGameObject::ProcessInput(InputEvent& input_event) {
         Ball* ball = new Ball(GetEngine().resource_loader.Load<Model>("ball\\ball.glb"), &body_creation_setting);
         GetEngine().AddGameObject(ball);
         ball->GetBody().SetRotation(JPH::QuatArg::sEulerAngles({ camera.rotation.x, -camera.rotation.y, camera.rotation.z }));
+
+        AudioEventInstance audio("event:/DiceRoll");
+        audio.SetPosition({0.0, 0.0, 0.0});
+        audio.Play();
     } else if (input_event.type == InputEventType::kMouseMotion) {
         float sensitivity = 0.0035f;
         glm::vec2 mouse_movement = glm::vec2(input_event.mouse_movement_x, input_event.mouse_movement_y) * sensitivity;

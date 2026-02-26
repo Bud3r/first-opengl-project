@@ -14,6 +14,8 @@ private:
     PhysicsModelGameObject* floor_game_object;
     PhysicsModelGameObject* ak_game_object;
     PlayerGameObject* player_game_object;
+    std::shared_ptr<FMOD::Studio::Bank> master_bank_;
+    std::shared_ptr< FMOD::Studio::Bank> master_strings_bank_;
     std::shared_ptr<Model> model;
 };
 

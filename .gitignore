@@ -1,6 +1,13 @@
+# Budder Engine
 CMakeUserPresets.json
 out/
 **/.generated_assets
+
+# FMOD
+**/.cache
+**/.unsaved
+**/.user
+**/Build
 
 ############################################################
 # Visual Studio - Start

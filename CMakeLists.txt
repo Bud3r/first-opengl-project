@@ -4,13 +4,19 @@
 #"${CMAKE_BINARY_DIR}/bin/$<CONFIG>"
 set(assets_path "${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_definitions(ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/assets/")
 add_compile_definitions(GENERATED_ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/game/.generated_assets/")
 
+
+
 project(BudderEngine)
+
+include_directories(.)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
@@ -39,9 +45,33 @@ add_library(
 	"core/resource_loaders/model_loader.h" "core/resource_loaders/model_loader.cpp"
 	"core/resource_loaders/texture_loader.h" "core/resource_loaders/texture_loader.cpp"
 	"core/resource_loaders/resource_format_loader.h"
-     "core/resource_loaders/shader_program_loader.h" "core/resource_loaders/shader_program_loader.cpp")
+    "core/resource_loaders/shader_program_loader.h" "core/resource_loaders/shader_program_loader.cpp"
+	"core/audio_event_instance.cpp" "core/audio_event_instance.h" 
+	"core/resource_loaders/fmod_bank_loader.cpp" 
+	"core/resource_loaders/fmod_bank_loader.h"
+)
 
-target_include_directories(BudderEngine-Core PUBLIC "core/include")
+set(
+	FMOD_API_PATH 
+    "F:/Program Files (x86)/FMOD SoundSystem/FMOD Studio API Windows/api"
+)
+
+
+
+add_library(
+	FMOD-STUDIO
+	STATIC IMPORTED
+)
+set_property(TARGET FMOD-STUDIO PROPERTY 
+	IMPORTED_LOCATION "${FMOD_API_PATH}/studio/lib/x64/fmodstudio_vc.lib"
+)
+
+
+target_include_directories(BudderEngine-Core 
+	PUBLIC "core/include"
+	"${FMOD_API_PATH}/core/inc"
+	"${FMOD_API_PATH}/studio/inc"
+)
 
 target_link_libraries(BudderEngine-Core
 	PUBLIC fmt::fmt 
@@ -51,6 +81,7 @@ target_link_libraries(BudderEngine-Core
 	PUBLIC Jolt::Jolt 
 	PUBLIC assimp::assimp 
 	PUBLIC imgui::imgui
+	PUBLIC FMOD-STUDIO
 )
 
 # - You can change the name "BudderEngine-Game" to anything you want.

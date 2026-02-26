@@ -11,12 +11,13 @@
 // TODO: Make a game.
 
 std::filesystem::path Engine::executable_path = std::filesystem::path("");
+FMOD::Studio::System* Engine::fmod_system = nullptr;
 
 namespace {
 	int width_ = kInitWindowWidth;
 	int height_ = kInitWindowHeight;
 	bool _show_demo_window = true;
-
+	
 	void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 		glViewport(0, 0, width, height);
 		width_ = width;
@@ -27,12 +28,20 @@ namespace {
 
 Engine::Engine() {
 	glfwInit();
+	
+	const int kFmodChannelCount = 32;
+	FMOD::Studio::System::create(&fmod_system);
+	fmod_system->initialize(
+		kFmodChannelCount,
+		FMOD_STUDIO_INIT_SYNCHRONOUS_UPDATE,
+		0,
+		nullptr
+	);
 
 	window_ = new Window(kInitWindowWidth, kInitWindowHeight, "title");
 	window_->auto_accept_quit = false;
 	window_->MakeContextCurrent();
 	stbi_set_flip_vertically_on_load(true);
-
 	unsigned char default_texture_data[3 * 4] = {
 		255, 0, 255,
 		0, 0, 0,
@@ -80,8 +89,11 @@ void Engine::Update(double deltaTime)
 {
 	glfwMakeContextCurrent(window_->GetGlfwWindow());
 
+	//fmod_system->setListenerAttributes(0, FMOD_3D_ATTRIBUTES::position, { 0.0f, 0.0f, 0.0f })
+
+	fmod_system->update();
 	//ImGui_ImplOpenGL3_NewFrame();
-	//ImGui_ImplGlfw_NewFrame();
+	//ImGui_ImplGlfw_NewFrame();https://open.spotify.com/user/e0bm35lelv4s9l99zm9cfe27i/collection
 	//ImGui::NewFrame();
 
 	physics_server.Update((float)deltaTime);
@@ -103,6 +115,14 @@ void Engine::Update(double deltaTime)
 		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
 
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		FMOD_3D_ATTRIBUTES listener_attribs{
+		FMOD_VECTOR { current_camera->position.x, current_camera->position.y, current_camera->position.z },
+		FMOD_VECTOR { 0.0f, 0.0f, 0.0f },
+		FMOD_VECTOR { 0.0f, 0.0f, 1.0f },
+		FMOD_VECTOR { 0.0f, 1.0f, 0.0f },
+		};
+		fmod_system->setListenerAttributes(0, &listener_attribs);
 	}
 
 	//if (_show_demo_window){

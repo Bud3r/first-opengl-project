@@ -28,6 +28,7 @@
 #include "resource_loader.h"
 #include "input_manager.h"
 #include "texture.h"
+#include "fmod_studio.hpp"
 
 constexpr int kUboBinding = 0;
 constexpr int kInitWindowWidth = 800;
@@ -137,7 +138,11 @@ public:
 	std::vector<GameObject*> process_objects;
 
 	const std::shared_ptr<ShaderProgram> GetDefaultShaderProgram() const;
+	static FMOD::Studio::System* GetFmodSystem() {
+		return fmod_system;
+	}
 private:
+	static FMOD::Studio::System* fmod_system;
 	static std::filesystem::path executable_path;
 
 	GLFWwindow* CreateWindow();

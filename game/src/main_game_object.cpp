@@ -35,6 +35,19 @@ Mesh* _create_square_mesh(glm::vec3 e) {
 
 
 void MainGameObject::AddedToEngine() {
+    master_bank_ = GetEngine().resource_loader.Load<FMOD::Studio::Bank>("fmod_budder_engine_game/Build/Desktop/master.bank");
+    master_strings_bank_ = GetEngine().resource_loader.Load<FMOD::Studio::Bank>("fmod_budder_engine_game/Build/Desktop/master.strings.bank");
+    int event_count = 0;
+    FMOD::Studio::EventDescription* events[16];
+    master_bank_->getEventList(&events[0], 16, &event_count);
+    for (size_t i = 0; i < event_count; i++)
+    {
+        char path[1024]; 
+        int retrieved = 0;
+        events[i]->getPath(&path[0], 1024, &retrieved);
+        std::cout << path << std::endl;
+    }
+
     auto ak_body_settings = JPH::BodyCreationSettings(
         new JPH::BoxShape(JPH::Vec3Arg(1.0f, 1.0f, 1.0f)),
         JPH::RVec3Arg(0.0_r, 0.5_r, 0.0_r),
